@@ -1,4 +1,4 @@
-
+'use strict';
 
 const LineByLineReader = require('line-by-line');
 const fs = require('fs');
@@ -77,6 +77,7 @@ function readGeojson(file, tilecount){
         if (err) throw err;
 
         var geojson = JSON.parse(data);
+        
         var finalGeojson = {
             "type": "FeatureCollection",
             "features": []
@@ -89,7 +90,6 @@ function readGeojson(file, tilecount){
                 geojson.features[key].properties.wikipedia_link = objValues.url;
                 geojson.features[key].properties.gender = objValues.gender;
                 geojson.features[key].properties.scale = objValues.scale;
-                //newGeojson.features.push(geojson.features[key]);
                 
                 if(!tratadosList.has(geojson.features[key].properties.name)){
 

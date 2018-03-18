@@ -1,8 +1,6 @@
+'use strict';
 
 const url_search = 'http://api.namsor.com/onomastics/api/json/gendre';
-
-
-
 
 const LineByLineReader = require('line-by-line');
 const axios = require('axios');
@@ -10,12 +8,8 @@ const fs = require('fs');
 const  path = require('path');
 const args = require('yargs').argv;
 
-
 const folder = (args.ciudad ? args.ciudad : 'ciudad');
-
-
 const gender_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize.csv`), {'flags': 'a'});
-
 
 
 function startProcess(){
@@ -70,7 +64,6 @@ function initReadFile(stream){
             lr.resume();
         }); 
 
-            
     });
     
     lr.on('end', function () {
@@ -81,5 +74,3 @@ function initReadFile(stream){
 }
 
 startProcess();
-
-

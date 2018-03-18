@@ -1,8 +1,7 @@
+'use strict';
 
 const url_search = 'https://es.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=3&format=json&gsrsearch=';
 const url_wiki_base = 'https://es.wikipedia.org/wiki/';
-
-
 
 const LineByLineReader = require('line-by-line');
 const axios = require('axios');
@@ -10,14 +9,12 @@ const fs = require('fs');
 const  path = require('path');
 const args = require('yargs').argv;
 
-
 const folder = (args.ciudad ? args.ciudad : 'ciudad');
 const searchWikipedia = (args.wikipedia ? true : false);
 
 const streetMap = new Set();
 const filtered_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize_filtered${(searchWikipedia? '_w': '')}.csv`), {'flags': 'a'});
 const descarte_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize_descarte.csv`), {'flags': 'a'});
-
 
 
 function startProcess(){
@@ -117,5 +114,3 @@ function initReadFile(stream){
 }
 
 startProcess();
-
-
