@@ -57,7 +57,7 @@ Ejecutar:
 npm run step1 -- --area=[bbox] --ciudad=nombreciudad
 ```
 
-* Ejemplo: **npm run step1 -- --area=[ 2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona** 
+* Ejemplo: **npm run step1 -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona** 
 
 
 Se generan dos ficheros:

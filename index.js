@@ -58,6 +58,9 @@ tilereduce = tilereduce(opts)
 .on('end', function(error){
   fs.writeFile( path.join(__dirname, `data/${ciudad}/${ciudad}_streets.geojson`), JSON.stringify(finalGeojson), function(err) {}); 
   console.log(`${num} tiles has been processed.`);
+  fs.copyFileSync(path.join(__dirname, `data/list.csv`), path.join(__dirname, `data/${ciudad}/list.csv`));
+  fs.unlinkSync(path.join(__dirname, `data/list.csv`));
+  console.log('list.csv was copied to folder destination.');
   console.log('--------------------- END RESULTS -----------------------');
 });
 

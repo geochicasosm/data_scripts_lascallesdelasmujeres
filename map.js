@@ -30,7 +30,7 @@ function writeFileMapNames(){
   for (let item of mapNames.keys()){
     mapNamesString += '\', \''+item;
   };
-  fs.writeFile(path.join(__dirname, `data/${folder}/mapNames.txt`), '['+mapNamesString+']', function(err) {});  
+  fs.writeFile(path.join(__dirname, `data/mapNames.txt`), '['+mapNamesString+']', function(err) {});  
 }
 
 
@@ -56,7 +56,7 @@ function clip(lines, tile) {
 
 function cleanLines (lines) {
   
-  const logStream = fs.createWriteStream( path.join(__dirname, `data/${folder}/list.csv`), {encoding: 'utf8', flags: 'a'});
+  const logStream = fs.createWriteStream( path.join(__dirname, `data/list.csv`), {encoding: 'utf8', flags: 'a'});
 
   lines.features = lines.features.filter(function(line){
 
