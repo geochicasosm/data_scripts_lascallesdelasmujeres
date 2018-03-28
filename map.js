@@ -63,6 +63,8 @@ function cleanLines (lines) {
     if( isLine(line.geometry.type) && isValidHighway(line.properties)){
       
       var roadName = line.properties.name;
+      if(line.properties.wikipedia) console.log('wikipedia', line.properties.wikipedia);
+      if(line.properties.wikidata) console.log('wikipedia', line.properties.wikidata);
      
       if(line.properties.name && isValidRoadname(line.properties.name)){
 
