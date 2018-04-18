@@ -12,6 +12,12 @@ Los datos que se visualizan en el proyecto [#LasCallesDeLasMujeres](https://geoc
 
 ### Instalación y preparación de entorno
 
+Para poder decargar el proyecto i ejecutar los scripts, es necesario tener instalado:
+
+* GIT (Descargar [AQUí](https://git-scm.com/downloads))
+* Node.js (Descargar [AQUí](https://nodejs.org/es/download/))
+
+
 Descargar el proyecto:
 
 ```
@@ -71,7 +77,7 @@ Aplicar la clasificación del listado anterior en nombres masculinos o femeninos
 
 #### Opción 1:
 
-Usar la API online de NameSor. Ejecutar:
+Se usa un fichero con un listado de nombres clasificados por género, sacados de institutos de estadística. En caso que el nombre no aparezca en el listado, se hace una petición a la API online de NameSor. Ejecutar:
 
 ```
 npm run step2 -- --ciudad=nombreciudad
@@ -111,6 +117,9 @@ Revisar manualmente el fichero anterior:
 - Eliminar calles que no son de persona
 - Corregir errores en la clasificación male/female
 - Corregir y añadir enlaces de Wikipedia (las calles con nombre de hombre no necesitan enlace)
+
+A tener en cuenta:
+- Factor de fiabilidad: Valores de 2 a -2 (Mujer a Hombre).
 
 Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 

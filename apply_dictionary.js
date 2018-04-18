@@ -14,6 +14,10 @@ const folder = (args.ciudad ? args.ciudad : 'ciudad');
 const gender_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize.csv`), {'flags': 'a'});
 
 
+let numFindWomen = 0;
+let numFindMen = 0;
+let numNamesor = 0;
+
 //const nombres_stream = fs.createWriteStream(path.join(__dirname, `namesDB/list_mujeres.csv`), {'flags': 'a'});
 //const nombres_stream = fs.createWriteStream(path.join(__dirname, `namesDB/list_hombres.csv`), {'flags': 'a'});
 
@@ -99,7 +103,7 @@ function initReadFile(stream){
     lr.on('line', function (line) {
 
         lr.pause();
-        console.log('line...', line);
+        //console.log('line...', line);
     
         var splitLine = line.split(';');
 
@@ -109,24 +113,26 @@ function initReadFile(stream){
 
 
         if(womenDic.has(name.toUpperCase())){
-            console.log("iswomen");
-            var scale = 1;
+            //console.log("iswomen");
+            var scale = 2;
             var gender = "female";
             stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
             stream.write('\n');
+            numFindWomen++;
             lr.resume();
 
         } else if(menDic.has(name.toUpperCase())) {
-            console.log('ismen');
-            var scale = -1;
+            //console.log('ismen');
+            var scale = -2;
             var gender = "male";
             stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
             stream.write('\n');
+            numFindMen++;
             lr.resume();
 
         } else {
 
-            console.log('axios');
+            //console.log('axios');
             axios.get(`${url_search}/${name}/${surname}/es`)
         
             .then(function (response) {
@@ -135,6 +141,7 @@ function initReadFile(stream){
                 var gender = response.data.gender;
                 stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
                 stream.write('\n');
+                numNamesor++;
                 lr.resume();
     
             })
@@ -143,6 +150,7 @@ function initReadFile(stream){
                 //console.log(error);
                 stream.write(`${splitLine[0]};${name};${surname};0;Unknown`);
                 stream.write('\n');
+                numNamesor++;
                 lr.resume();
             }); 
         }
@@ -152,6 +160,10 @@ function initReadFile(stream){
     
     lr.on('end', function () {
         stream.end();
+        console.log('--------------');
+        console.log('Women names find in dictionary: ', numFindWomen);
+        console.log('Men names find in dictionary: ', numFindMen);
+        console.log('Names send to Namesor: ', numNamesor);
         console.log('----FINISH----');
     });
 
