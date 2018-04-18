@@ -45,7 +45,7 @@ function initWomenDic(){
     
     lr.on('end', function () {
         initMenDic();
-        console.log('WomenDic done!');
+        console.log('Diccionario de nombres de mujer init: OK');
     }); 
 }
 
@@ -67,7 +67,7 @@ function initMenDic(){
     
     lr.on('end', function () {
         
-        console.log('MenDic done!');
+        console.log('Diccionario de nombres de hombre init: OK');
         startProcess();
     }); 
 }
@@ -81,7 +81,6 @@ function startProcess(){
   
         const gender_stream2 = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize.csv`), {'flags': 'a'});
         gender_stream2.once('open', function(fd) {
-            console.log('gender opem...');
             initReadFile(gender_stream2);           
         });        
 
@@ -92,7 +91,7 @@ function startProcess(){
 
 function initReadFile(stream){
 
-    console.log('initReadFIle....');
+    console.log('Procesando listado de calles....');
     var lr = new LineByLineReader(path.join(__dirname, `data/${folder}/list.csv`), { encoding: 'utf8', skipEmptyLines: true });
 
     lr.on('error', function (err) {
@@ -161,9 +160,9 @@ function initReadFile(stream){
     lr.on('end', function () {
         stream.end();
         console.log('--------------');
-        console.log('Women names find in dictionary: ', numFindWomen);
-        console.log('Men names find in dictionary: ', numFindMen);
-        console.log('Names send to Namesor: ', numNamesor);
+        console.log('Nombres de mujer encontrados en el diccionario: ', numFindWomen);
+        console.log('Nombres de hombre encontrados en el diccionario: ', numFindMen);
+        console.log('Nombre enviados a namesor: ', numNamesor);
         console.log('----FINISH----');
     });
 
