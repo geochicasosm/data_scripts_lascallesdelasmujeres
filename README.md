@@ -1,5 +1,7 @@
 # SCRIPTS de generación de datos para #LasCallesDeLasMujeres
 
+Read this in ENGLISH here: [README.en.md](https://github.com/geochicasosm/data_scripts_lascallesdelasmujeres/master/README.en.md)
+
 Visita la web del proyecto: [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) ( Versión beta ) de [GEOCHICAS](https://geochicas.org/)
 
 
