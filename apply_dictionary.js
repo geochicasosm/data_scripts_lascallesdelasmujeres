@@ -11,7 +11,7 @@ const  path = require('path');
 const args = require('yargs').argv;
 
 const folder = (args.ciudad ? args.ciudad : 'ciudad');
-const gender_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize.csv`), {'flags': 'a'});
+//const gender_stream = fs.createWriteStream(path.join(__dirname, `data/${folder}/list_genderize.csv`), {'flags': 'a'});
 
 
 let numFindWomen = 0;
@@ -107,38 +107,63 @@ function initReadFile(stream){
         var splitLine = line.split(';');
 
         var name_surname = splitLine[1].split(' ');
+        
         var name = name_surname[0];
         var surname = (name_surname.length > 1 ? name_surname[1] : '' );
 
+        var isWoman = false;
+        var isMan = false;
 
-        if(womenDic.has(name.toUpperCase())){
-            //console.log("iswomen");
+        for (var word of name_surname) {
+            
+            var w = prepareWord(word);
+
+            if(womenDic.has(w.toUpperCase())){
+                isWoman = true;
+                break;
+            } else if(menDic.has(w.toUpperCase())) {
+                isMan = true;
+                break;
+            }
+        }
+
+
+        //if(womenDic.has(name.toUpperCase())){
+        if(isWoman){
+            console.log("FEMALE", `${splitLine[0]}`);
             var scale = 2;
             var gender = "female";
-            stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
+            stream.write(`${splitLine[0]};${splitLine[1]};${name};${surname};${scale};${gender}`);
             stream.write('\n');
             numFindWomen++;
             lr.resume();
 
-        } else if(menDic.has(name.toUpperCase())) {
-            //console.log('ismen');
+        //} else if(menDic.has(name.toUpperCase())) {
+        } else if(isMan){
+            console.log("MALE", `${splitLine[0]}`);
             var scale = -2;
             var gender = "male";
-            stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
+            stream.write(`${splitLine[0]};${splitLine[1]};${name};${surname};${scale};${gender}`);
             stream.write('\n');
             numFindMen++;
             lr.resume();
 
         } else {
 
+            console.log("UNKNOWN", `${splitLine[0]}`);
+            stream.write(`${splitLine[0]};${splitLine[1]};${name};${surname};0;Unknown`);
+            stream.write('\n');
+            numNamesor++;
+            lr.resume();
+
             //console.log('axios');
-            axios.get(`${url_search}/${name}/${surname}/es`)
+            /* axios.get(`${url_search}/${name}/${surname}/es`)
         
             .then(function (response) {
     
                 var scale = response.data.scale;
                 var gender = response.data.gender;
-                stream.write(`${splitLine[0]};${name};${surname};${scale};${gender}`);
+                stream.write(`${splitLine[0]};${splitLine[1]};${name};${surname};${scale};${gender}`);
                 stream.write('\n');
                 numNamesor++;
                 lr.resume();
@@ -147,11 +172,11 @@ function initReadFile(stream){
             .catch(function (error) {            
                 //console.log('line error', line);
                 //console.log(error);
-                stream.write(`${splitLine[0]};${name};${surname};0;Unknown`);
+                stream.write(`${splitLine[0]};${splitLine[1]};${name};${surname};0;Unknown`);
                 stream.write('\n');
                 numNamesor++;
                 lr.resume();
-            }); 
+            }); */ 
         }
 
 
@@ -166,6 +191,21 @@ function initReadFile(stream){
         console.log('----FINISH----');
     });
 
+}
+
+function prepareWord(str) {
+
+    let accents = 'ÀÁÂÃÄÅàáâãäåßÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+    let accentsOut = "AAAAAAaaaaaaBOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz";
+    str = str.split('');
+    str.forEach((letter, index) => {
+      let i = accents.indexOf(letter);
+      if (i != -1) {
+        str[index] = accentsOut[i];
+      }
+    })
+    
+    return str.join('');  
 }
 
 //startProcess();
