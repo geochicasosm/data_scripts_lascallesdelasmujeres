@@ -56,7 +56,6 @@ Crear una carpeta dentro de la carpeta del proyecto con el nombre de la ciudad a
 
 
  
-
 ### _Paso 2_
 
 Ejecutar:
@@ -75,42 +74,25 @@ Se generan dos ficheros:
 
 ### _Paso 3_
 
-Aplicar la clasificación del listado anterior en nombres masculinos o femeninos. Dos opciones:
+Aplicar la clasificación del listado anterior en nombres masculinos o femeninos:
 
-#### Opción 1:
-
-Se usa un fichero con un listado de nombres clasificados por género, sacados de institutos de estadística. En caso que el nombre no aparezca en el listado, se hace una petición a la API online de NameSor. Ejecutar:
 
 ```
 npm run step2 -- --ciudad=nombreciudad
 ```
 
-* Si se alcanza el límite gratuito permitido, usar la opción 2.
-
-#### Opción 2:
-
-Instalar y usar RapidMiner. Descargar [AQUÍ](https://rapidminer.com/)
-
-Seguir [ESTE](https://www.youtube.com/watch?v=wScgijiqA2c) tutorial.
-
-**IMPORTANTE**: 
-Se ha de indicar explícitamente que 
--	el formato de salida sea un CSV
--	el encoding sea UTF-8.
--	el nombre del fichero de salida sea 'list_genderize.csv'
+Se genera el fichero 'list_genderize.csv' como resultado.
 
 
 ### _Paso 4_
 
-Aplicar el script que elimina las calles con factores de fiabilidad por encima y por debajo de -0.25 y 0.25.
-
-Pasar el parámetro **--wikipedia** si se quiere forzar la búsqueda de los artículos de Wikipedia.
+Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
 
 ```
-npm run step3 -- –-ciudad=nombreciudad --wikipedia
+npm run step3 -- –-ciudad=nombreciudad
 ```
 
-Se genera el fichero 'list_genderize.csv' o 'list_genderize_w.csv' si hemos forzado la búsqueda en Wikipedia.
+Se genera el fichero 'list_genderize_wikipedia.csv'.
 
 
 ### _Paso 5_
@@ -121,7 +103,7 @@ Revisar manualmente el fichero anterior:
 - Corregir y añadir enlaces de Wikipedia (las calles con nombre de hombre no necesitan enlace)
 
 A tener en cuenta:
-- Factor de fiabilidad: Valores de 2 a -2 (Mujer a Hombre).
+- Factor de fiabilidad: Valores 2,-2 (Mujer,Hombre).
 
 Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 

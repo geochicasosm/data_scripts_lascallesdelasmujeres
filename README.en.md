@@ -71,42 +71,25 @@ The following two files are generated:
 
 ### Step 3_
 
-Apply the classification of the previous listing in masculine or feminine names. Two options:
+Apply the classification of the previous listing in masculine or feminine names:
 
-#### Option 1:
-
-A file with a list of names classified by gender is used (taken from public statistical institutes). In case the name does not appear in the list, a request is made to the NameSor online API. Run:
 
 ```
 npm run step2 -- --ciudad=nombreciudad
 ```
 
-* If the allowed free limit is reached, use option 2.
-
-#### Option 2:
-
-Install and use RapidMiner. Download [HERE](https://rapidminer.com/)
-
-Follow [THIS](https://www.youtube.com/watch?v=wScgijiqA2c) tutorial.
-
-**IMPORTANT**: 
-It must be explicitly stated that
-- the output format is a CSV
-- the encoding is UTF-8.
-- the name of the output file is 'list_genderize.csv'
+The file 'list_genderize.csv' is generated.
 
 
 ### Step 4_
 
-Apply the script that eliminates streets with reliability factors above and below -0.25 and 0.25.
-
-Pass the parameter ** - wikipedia ** if you want to force the search for Wikipedia articles.
+Apply the script that eliminates streets classified as "unknown" and search of the Wikipedia articles related to streets named after women:
 
 ```
-npm run step3 -- –-ciudad=nombreciudad --wikipedia
+npm run step3 -- –-ciudad=nombreciudad
 ```
 
-The file 'list_genderize.csv' or 'list_genderize_w.csv' is generated if we have forced the search in Wikipedia.
+The file  'list_genderize_wikipedia.csv' is generated.
 
 
 ### Step 5_
@@ -117,7 +100,7 @@ Manually review the previous file:
 - Correct and add Wikipedia links (streets with man's name do not need a link)
 
 To consider:
-- Reliability factor: Values from 2 to -2 (Female to Male).
+- Reliability factor: Values from 2,-2 (Female,Male).
 
 Save the corrected file in the same project folder, with the name:
 

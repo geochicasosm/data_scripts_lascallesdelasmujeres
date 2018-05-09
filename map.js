@@ -63,8 +63,8 @@ function cleanLines (lines) {
     if( isLine(line.geometry.type) && isValidHighway(line.properties)){
       
       var roadName = line.properties.name;
-      if(line.properties.wikipedia) console.log('wikipedia', line.properties.wikipedia);
-      if(line.properties.wikidata) console.log('wikipedia', line.properties.wikidata);
+      //if(line.properties.wikipedia) console.log('wikipedia', line.properties.wikipedia);
+      //if(line.properties.wikidata) console.log('wikipedia', line.properties.wikidata);
      
       if(line.properties.name && isValidRoadname(line.properties.name)){
 
@@ -124,9 +124,9 @@ function cleanRoadName(roadName){
   var filterList2 = ['de la ', 'de l\'', 'de les ', 'dels ', 'del ', 'de ', 'd\'']; */
 
   /*Spanish*/
-  var filterList = ['Paseo','Río', 'Avenida', 'Hacienda', 'Puerto', 'Calle', 'Calzada', 'Camino', 'Av.','Paso', 'Cañada', 'Minas', 'Cerrada', 
-    'Puebla', 'Principal', 'Central','Callejón', 'Primera', 'Segunda', 'Portón', 'Lateral', 'Calz.', 'Corrido', 'Casa', 'Villa', 'Mejía', 
-    'Vía', 'Real', 'Isla', 'Avendida', 'Marisma', 'Rada', 'Raudal', 'Ribera', 'Embocadura', 'Cataratas', 'Médanos', 
+  var filterList = ['Paseo','Río', 'Avenida', 'Hacienda', 'Puerto', 'Callejón', 'Calle', 'Calzada', 'Camino', 'Av.','Paso', 'Cañada', 'Minas', 'Cerrada', 
+    'Puebla', 'Principal', 'Central','Primera', 'Segunda', 'Portón', 'Lateral', 'Calz.', 'Corrido', 'Casa', 'Villa', 'Mejía', 
+    'Vía', 'Via', 'Real', 'Isla', 'Avendida', 'Marisma', 'Rada', 'Raudal', 'Ribera', 'Embocadura', 'Cataratas', 'Médanos', 
     'Mirador', 'Av', 'Jardín',  'A.', 'Circuito','Gral.', 'Rincón', 'Calz', 'Rinconada', 'Periférico', 'Cda', 'Jardin', 
     'C.', 'Callejon', 'Colegio', 'Valle', 'avenida', 'camino', 'calle', 'Calle', 'Rotonda', 'Parqueo', 'Parque', 'entrada', 
     'Entrada', 'sendero', 'Sendero', 'Pasaje', 'pasaje', 'Puerto', 'Ciudad', 'Puente', 'Boulevard', 'Agrosuperior', 'Bodegas', 
