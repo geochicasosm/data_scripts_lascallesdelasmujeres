@@ -15,28 +15,31 @@ lr.on('line', function (line) {
 
 	lr.pause();
 
+    //LINE EXAMPLE:
+    //calle;calleClean;name;surname;fiabilidad;gender;wikipedia
+
     var splitLine = line.split(';');
 
     //Male case
-    if(splitLine[4].toLowerCase() === "male" ){
+    if(splitLine[5].toLowerCase() === "male" ){
 
         streeMap.set(splitLine[0], {
             url: '',
-            gender: splitLine[4],
-            scale: splitLine[3]
+            gender: splitLine[5],
+            scale: splitLine[4]
         });  
         
         lr.resume();
 
-    }else if(splitLine[4].toLowerCase() === "female"){ //Female case
+    }else if(splitLine[5].toLowerCase() === "female"){ //Female case
 
         var url = '';
-        if(splitLine.length > 5) url = splitLine[5];
+        if(splitLine.length > 6) url = splitLine[6];
 
         streeMap.set(splitLine[0], {
             url: url,
-            gender: splitLine[4],
-            scale: splitLine[3]
+            gender: splitLine[5],
+            scale: splitLine[4]
         });
         lr.resume();   
 

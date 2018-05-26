@@ -10,7 +10,7 @@
     "step3": "node ./apply_wikipedia.js",
     "step4": "node ./parse_final.js"
   },
-  "author": "Jessica Sena",
+  "author": "Jessica Sena - @Geochicas",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
