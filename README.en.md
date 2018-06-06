@@ -42,7 +42,7 @@ Instructions
 
 Define [HERE](http://tools.geofabrik.de/calc/) the BBOX of the city to be treated.
 
-Create a folder inside the project folder with the name of the city to be treated (lowercase, no spaces). Examples:
+Create a folder inside the folder called "data", with the name of the city to be treated (lowercase, no spaces). Examples:
 
  **barcelona** 
  
@@ -96,15 +96,27 @@ The file  'list_genderize_wikipedia.csv' is generated.
 
 Manually review the previous file:
 - Remove streets that are not of person
-- Correct errors in the male / female classification
+- Correct errors in the male / female classification. The reliability factor is 2,-2 / Female,Male.
 - Correct and add Wikipedia links (streets with man's name do not need a link)
 
-To consider:
-- Reliability factor: Values from 2,-2 (Female,Male).
+----
+#### Guidelines to remove or maintain streets:
+
+ To *REMOVE* if:
+- Make an allusion to flora or fauna
+- Make alusions to historical moments (La Batalla de Pavón)
+- Make allusion to inanimate objects (Esmeralda = Argentine ship)
+
+To *MANTAIN* IF:
+- It's named after a saint
+- It is named after a female deity with representation of a woman (Venus)
+----
 
 Save the corrected file in the same project folder, with the name:
 
 **nombreciudad_finalCSV.csv**
+
+*ATTENTION*: It is very important that the field separator used in the CSV is ";", otherwise it will not work.
 
 ### Step 6_
 

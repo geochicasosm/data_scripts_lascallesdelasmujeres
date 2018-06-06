@@ -46,7 +46,7 @@ Instrucciones
 
 Buscar [AQUÍ](http://tools.geofabrik.de/calc/) la BBOX de la ciudad a tratar.
 
-Crear una carpeta dentro de la carpeta del proyecto con el nombre de la ciudad a tratar, en minúsuclas y sin espacios. Ejemplos: 
+Crear una carpeta dentro de la carpeta "data" del proyecto, con el nombre de la ciudad a tratar, en minúsculas y sin espacios. Ejemplos: 
 
  **barcelona** 
  
@@ -99,15 +99,28 @@ Se genera el fichero 'list_genderize_wikipedia.csv'.
 
 Revisar manualmente el fichero anterior:
 - Eliminar calles que no son de persona
-- Corregir errores en la clasificación male/female
+- Corregir errores en la clasificación male/female. El factor de fiabilidad es  2,-2 (Mujer,Hombre). 
 - Corregir y añadir enlaces de Wikipedia (las calles con nombre de hombre no necesitan enlace)
 
-A tener en cuenta:
-- Factor de fiabilidad: Valores 2,-2 (Mujer,Hombre).
+----
+#### Criterios para eliminar o mantener calles:
+
+Se *ELIMINA* si:
+- Hace alusión a flora o fauna
+- Hace alusión a momentos históricos (La Batalla de Pavón)
+- Hace alusión a objetos inanimados (Esmeralda = Buque Argentino)
+
+Se *MANTIENE* si:
+- Lleva el nombre de una santa
+- Lleva el nombre de una deidad femenina con representación de mujer (Venus)
+----
+
 
 Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 
 **nombreciudad_finalCSV.csv**
+
+*ATENCIÓN*: Es muy importante que el separador de campos utilizado en el CSV sea el ";", en caso contrario no funcionará.
 
 ### _Paso 6_
 
