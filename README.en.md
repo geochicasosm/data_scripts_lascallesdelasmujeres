@@ -12,8 +12,8 @@ The data displayed in the project [#LasCallesDeLasMujeres] (https://geochicasosm
 
 To be able to download the project and execute the scripts, it is necessary to have installed:
 
-* GIT (Download [AQUí](https://git-scm.com/downloads))
-* Node.js (Download [AQUí](https://nodejs.org/es/download/))
+* GIT (Download [HERE](https://git-scm.com/downloads))
+* Node.js (Download [HERE](https://nodejs.org/en/download/))
 
 
 Download the project:
@@ -28,7 +28,8 @@ Installing the packages:
 npm install
 ```
 
-Download [HERE](http://osmlab.github.io/osm-qa-tiles/) the complete OSM planet (or the area of interest) and save it in a folder called "data", inside the project folder.
+Download [HERE](http://osmlab.github.io/osm-qa-tiles/) the complete OSM planet (or the area of interest) and save it in a folder called "data", inside the project folder.  
+(Keep in mind that if you just want to download a specific area of interest, you must rename the unzipped file to "latest.planet.mbtiles")
 
 ```
 ./data/latest.planet.mbtiles
@@ -44,86 +45,86 @@ Define [HERE](http://tools.geofabrik.de/calc/) the BBOX of the city to be treate
 
 Create a folder inside the folder called "data", with the name of the city to be treated (lowercase, no spaces). Examples:
 
- **barcelona** 
- 
- **sanjose** 
- 
- **buenosaires** 
+ **barcelona**
+
+ **sanjose**
+
+ **buenosaires**
 
 
- 
 
-### Step 2_
+
+### _Step 2_
 
 Execute:
 
 ```
-npm run step1 -- --area=[bbox] --ciudad=nombreciudad
+npm run step1 -- --area=[bbox] --ciudad=cityname
 ```
 
-* Example: **npm run step1 -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona** 
+* Example: **npm run step1 -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona**
 
 
 The following two files are generated:
-* nombreciudad_streets.geojson
+* cityname_streets.geojson
 * list.csv
 
 
-### Step 3_
+### _Step 3_
 
 Apply the classification of the previous listing in masculine or feminine names:
 
 
 ```
-npm run step2 -- --ciudad=nombreciudad
+npm run step2 -- --ciudad=cityname
 ```
 
 The file 'list_genderize.csv' is generated.
 
 
-### Step 4_
+### _Step 4_
 
 Apply the script that eliminates streets classified as "unknown" and search of the Wikipedia articles related to streets named after women:
 
 ```
-npm run step3 -- –-ciudad=nombreciudad
+npm run step3 -- --ciudad=cityname
 ```
 
 The file  'list_genderize_wikipedia.csv' is generated.
 
 
-### Step 5_
+### _Step 5_
 
 Manually review the previous file:
-- Remove streets that are not of person
+- Remove streets that don't have human names
 - Correct errors in the male / female classification. The reliability factor is 2,-2 / Female,Male.
-- Correct and add Wikipedia links (streets with man's name do not need a link)
+- Correct and add Wikipedia links (streets with masculine names do not need a link)
 
 ----
 #### Guidelines to remove or maintain streets:
 
  To *REMOVE* if:
-- Make an allusion to flora or fauna
-- Make alusions to historical moments (La Batalla de Pavón)
-- Make allusion to inanimate objects (Esmeralda = Argentine ship)
+- Makes an allusion to flora or fauna
+- Makes allusions to historical moments (La Batalla de Pavón)
+- Makes allusion to inanimate objects (Esmeralda = Argentine ship)
 
-To *MANTAIN* IF:
+To *MANTAIN* if:
 - It's named after a saint
 - It is named after a female deity with representation of a woman (Venus)
 ----
 
 Save the corrected file in the same project folder, with the name:
 
-**nombreciudad_finalCSV.csv**
+**cityname_finalCSV.csv**
 
 *ATTENTION*: It is very important that the field separator used in the CSV is ";", otherwise it will not work.
 
-### Step 6_
+### _Step 6_
 
 Execute:
 
 ```
-npm run step4 -- –-ciudad=nombreciudad
+npm run step4 -- --ciudad=cityname
 ```
 
 Three files are generated:
@@ -145,10 +146,10 @@ Join our slack channel [#lascallesdelasmujeres](https://join.slack.com/t/geochic
 
 ## Technical Coordinator
 
-* **Jessica Sena** (*Spain*) - [@jsenag](https://jessisena.github.io/myprofile/) 
-    
+* **Jessica Sena** (*Spain*) - [@jsenag](https://jessisena.github.io/myprofile/)
+
     Computer engineer, web/mobile geo-developer.
-   
+
 
 
 ## License
@@ -159,7 +160,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Knowledgement
 
 
-* [Project](https://blog.mapbox.com/mapping-female-versus-male-street-names-b4654c1e00d5) _Mapping female versus male street names_ of Mapbox by [Aruna Sankaranarayanan](https://www.mapbox.com/about/team/aruna-sankaranarayanan/) 
+* [Project](https://blog.mapbox.com/mapping-female-versus-male-street-names-b4654c1e00d5) _Mapping female versus male street names_ of Mapbox by [Aruna Sankaranarayanan](https://www.mapbox.com/about/team/aruna-sankaranarayanan/)
 
 * [Open Street Map](https://www.openstreetmap.org/)
 
@@ -168,6 +169,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * [Wikipedia API](https://www.mediawiki.org/wiki/API:Main_page/es)
 
 * [Geofabrik](http://tools.geofabrik.de/calc/)
-
-
-
