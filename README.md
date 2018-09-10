@@ -14,7 +14,7 @@ Los datos que se visualizan en el proyecto [#LasCallesDeLasMujeres](https://geoc
 
 ### Instalación y preparación de entorno
 
-Para poder decargar el proyecto i ejecutar los scripts, es necesario tener instalado:
+Para poder decargar el proyecto y ejecutar los scripts, es necesario tener instalado:
 
 * GIT (Descargar [AQUí](https://git-scm.com/downloads))
 * Node.js (Descargar [AQUí](https://nodejs.org/es/download/))
@@ -31,14 +31,12 @@ Instalación de paquetes:
 ```
 npm install
 ```
-
-Descargar [AQUÍ](http://osmlab.github.io/osm-qa-tiles/) el planet completo de OSM (o la zona que interese) y guardar en una carpeta llamada "data", dentro de la carpeta del proyecto.
+Descargar [AQUÍ](http://osmlab.github.io/osm-qa-tiles/) el planet completo de OSM (o la zona que interese) y guardar en una carpeta llamada "data", dentro de la carpeta del proyecto.  
+(Tome en cuenta que si desea descargar sólo el paquete de la zona que interese, debe renombrar el archivo descomprimido a "latest.planet.mbtiles")
 
 ```
 ./data/latest.planet.mbtiles
 ```
-
-
 Instrucciones
 ======
 
@@ -89,7 +87,7 @@ Se genera el fichero 'list_genderize.csv' como resultado.
 Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
 
 ```
-npm run step3 -- –-ciudad=nombreciudad
+npm run step3 -- --ciudad=nombreciudad
 ```
 
 Se genera el fichero 'list_genderize_wikipedia.csv'.
@@ -127,7 +125,7 @@ Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 Ejecutar:
 
 ```
-npm run step4 -- –-ciudad=nombreciudad
+npm run step4 -- --ciudad=nombreciudad
 ```
 
 Se generan tres ficheros:
