@@ -13,7 +13,7 @@ The data displayed in the project [#LasCallesDeLasMujeres] (https://geochicasosm
 To be able to download the project and execute the scripts, it is necessary to have installed:
 
 * GIT (Download [HERE](https://git-scm.com/downloads))
-* Node.js (Download [HERE](https://nodejs.org/en/download/))
+* Node.js version <10 (Download [HERE](https://nodejs.org/download/release/v9.5.0/))
 
 
 Download the project:
