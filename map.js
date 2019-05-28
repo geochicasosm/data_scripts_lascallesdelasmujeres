@@ -1,24 +1,23 @@
 'use strict';
 
 const turf = require('turf');
-const cover = require('tile-cover');
 const tilebelt = require('tilebelt');
 const normalize = require('geojson-normalize');
 const flatten = require('geojson-flatten');
-const _ = require('underscore');
 const fs = require('fs');
 const  path = require('path');
+const filters = require('./scripts/constants').filters;
 
 
-const folder = 'bcn';
 
 
 var mapNames = new Set();
 var listStreetNames = new Set();
+const currentLang = "es";
 
 module.exports = function(tileLayers, tile, writeData, done){
 
-  var osmRoads = cleanLines(normalize(flatten(clip(tileLayers.osm.osm, tile))));
+  const osmRoads = cleanLines(normalize(flatten(clip(tileLayers.osm.osm, tile))));
   //writeFileMapNames();
   done(null, osmRoads);
 
@@ -36,20 +35,28 @@ function writeFileMapNames(){
 
 function clip(lines, tile) {
 
-  lines.features = lines.features.map(function(line){
+  lines.features = lines.features.map(function(line) {
 
     try {
+
       var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
       clipped.properties = line.properties;
       return clipped;
+
     } catch(e){
+
         console.log('error: '+e.message);
-      return;
+        return;
+
     }
   });
-  lines.features = lines.features.filter(function(line){
+
+  lines.features = lines.features.filter( function(line) {
+
     if(line) return true;
+  
   });
+
   return lines;
 }
 
@@ -58,26 +65,20 @@ function cleanLines (lines) {
   
   const logStream = fs.createWriteStream( path.join(__dirname, `data/list.csv`), {encoding: 'utf8', flags: 'a'});
 
-  lines.features = lines.features.filter(function(line){
+  lines.features = lines.features.filter( function(line) {
 
-    if( isLine(line.geometry.type) && isValidHighway(line.properties)){
+    if (isLine(line.geometry.type) && isValidHighway(line.properties)) {
       
-      var roadName = line.properties.name;
-      //if(line.properties.wikipedia) console.log('wikipedia', line.properties.wikipedia);
-      //if(line.properties.wikidata) console.log('wikipedia', line.properties.wikidata);
+      const roadName = line.properties.name;
      
-      if(line.properties.name && isValidRoadname(line.properties.name)){
+      if (line.properties.name && isValidRoadname(line.properties.name)) {
 
-
-        if(!listStreetNames.has(line.properties.name)){
+        if (!listStreetNames.has(line.properties.name)) {
           
-          const cleanName = cleanRoadName(roadName);          
+          const cleanName = cleanRoadName(roadName, currentLang);          
           logStream.write(`${line.properties.name};${cleanName}\n`);
           listStreetNames.add(line.properties.name);                   
         }
-        
-        //var listnames = roadName.split(' ');
-        //mapNames.add(listnames[0]);
 
         line.properties = {
           name: line.properties.name,
@@ -86,6 +87,7 @@ function cleanLines (lines) {
           gender: 'unknown',
           scale: ''
         };
+
         return true;
       }
     }
@@ -96,17 +98,17 @@ function cleanLines (lines) {
 }
 
 
-function isLine( geomType){
+function isLine(geomType){
   return (geomType === 'LineString' || geomType === 'MultiLineString');
 }
 
 function isValidHighway(properties){
 
-  if(properties.highway){
-    return (properties.highway == "pedestrian" || properties.highway == "footway" || properties.highway == "residential" || 
-    properties.highway == "unclassified" || properties.highway == "trunk" || properties.highway == "service" ||
-    properties.highway == "tertiary" || properties.highway == "primary" || properties.highway == "bridge" ||
-    properties.highway == "secondary" || properties.highway == "path" || properties.highway == "living_street");
+  if (properties.highway) {
+    return (properties.highway === "pedestrian" || properties.highway === "footway" || properties.highway === "residential" || 
+    properties.highway === "unclassified" || properties.highway === "trunk" || properties.highway === "service" ||
+    properties.highway === "tertiary" || properties.highway === "primary" || properties.highway === "bridge" ||
+    properties.highway === "secondary" || properties.highway === "path" || properties.highway === "living_street");
   }
 
   return false;
@@ -117,14 +119,15 @@ function isValidRoadname(roadName){
 }
 
 
-function cleanRoadName(roadName){
+function cleanRoadName(roadName, lang = 'es'){
 
   /*Catalan*/
-/*   var filterList = ['Avinguda', 'avinguda', 'Túnel', 'Camí', 'Carrer', 'Ctra.', 'Passatge', 'Ronda', 'Passeig', 'Viaducte', 'Via', 'carrer', 'Torrent', 'camí', 'Rotonda', 'Plaça', 'Jardins', 'Jardí', 'Parc', 'Accés', 'Baixada', 'Rambla', 'Travessera', 'travessera', 'Riera', 'plaça', 'Gran', 'Passage', 'Placeta', 'Sant', 'antiga', 'Ptge.', 'Pont', 'Travessia', 'la', 'Cerrer', 'Pla', 'Marquès', 'Av.', 'Antic', 'Cami', 'sendero', 'entrada', 'avinguda', 'cami', 'passeig', 'Nostra', 'passatge', 'Pista', 'Corriol', 'Costa'];
-  var filterList2 = ['de la ', 'de l\'', 'de les ', 'dels ', 'del ', 'de ', 'd\'']; */
+  //var filterList = ['Avinguda', 'avinguda', 'Túnel', 'Camí', 'Carrer', 'Ctra.', 'Passatge', 'Ronda', 'Passeig', 'Viaducte', 'Via', 'carrer', 'Torrent', 'camí', 'Rotonda', 'Plaça', 'Jardins', 'Jardí', 'Parc', 'Accés', 'Baixada', 'Rambla', 'Travessera', 'travessera', 'Riera', 'plaça', 'Gran', 'Passage', 'Placeta', 'Sant', 'antiga', 'Ptge.', 'Pont', 'Travessia', 'la', 'Cerrer', 'Pla', 'Marquès', 'Av.', 'Antic', 'Cami', 'sendero', 'entrada', 'avinguda', 'cami', 'passeig', 'Nostra', 'passatge', 'Pista', 'Corriol', 'Costa'];
+  //var filterList2 = ['de la ', 'de l\'', 'de les ', 'dels ', 'del ', 'de ', 'd\'']; 
+ 
 
   /*Spanish*/
-  var filterList = ['Paseo','Río', 'Avenida', 'Hacienda', 'Puerto', 'Callejón', 'Calle', 'Calzada', 'Camino', 'Av.','Paso', 'Cañada', 'Minas', 'Cerrada', 
+  /* const filterList = ['Paseo','Río', 'Avenida', 'Hacienda', 'Puerto', 'Callejón', 'Calle', 'Calzada', 'Camino', 'Av.','Paso', 'Cañada', 'Minas', 'Cerrada', 
     'Puebla', 'Principal', 'Central','Primera', 'Segunda', 'Portón', 'Lateral', 'Calz.', 'Corrido', 'Casa', 'Villa', 'Mejía', 
     'Vía', 'Via', 'Real', 'Isla', 'Avendida', 'Marisma', 'Rada', 'Raudal', 'Ribera', 'Embocadura', 'Cataratas', 'Médanos', 
     'Mirador', 'Av', 'Jardín',  'A.', 'Circuito','Gral.', 'Rincón', 'Calz', 'Rinconada', 'Periférico', 'Cda', 'Jardin', 
@@ -133,7 +136,10 @@ function cleanRoadName(roadName){
     'Autobanco', 'SkyTrace', 'Plaza', 'Motel', 'C/', 'Rotonda', 'Drive', 'Residencial', 'Automac', 
     'Auto', 'Transcersal', 'Inter', 'Pasillo', 'Centro', 'Caminito', 'Arandas', 'Proveedores', 'Cajero', 'Zona', 'Primer', 'Res.'
   ];
-  var filterList2 = ['de las ', 'de la ', 'de los ', 'de lo ', 'del ', 'de ', 'en '];
+  const filterList2 = ['de las ', 'de la ', 'de los ', 'de lo ', 'del ', 'de ', 'en ']; */
+
+  const filterList = filters[lang].filter01;
+  const filterList2 = filters[lang].filter02;
      
   for(var i =0; i< filterList.length; i++){
 

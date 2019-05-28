@@ -5,15 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "step1": "node index",
-    "step2": "node ./apply_gender.js",
-    "step3": "node ./apply_wikipedia.js",
-    "step4": "node ./parse_final.js"
+    "step1": "node ./index",
+    "step2": "node ./scripts/apply_gender.js",
+    "step3": "node ./scripts/apply_wikipedia.js",
+    "step4": "node ./scripts/parse_final.js"
   },
   "author": "Jessica Sena",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0",
     "binary-split": "^0.1.2",
     "fs": "0.0.1-security",
     "fuse.js": "^3.2.0",
