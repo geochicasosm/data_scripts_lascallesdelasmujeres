@@ -13,11 +13,11 @@ const filters = require('./scripts/constants').filters;
 
 var mapNames = new Set();
 var listStreetNames = new Set();
-const currentLang = "es";
+const currentLangs = ["es"];
 
 module.exports = function(tileLayers, tile, writeData, done){
 
-  const osmRoads = cleanLines(normalize(flatten(clip(tileLayers.osm.osm, tile))));
+  const osmRoads = cleanGeoms(normalize(flatten(clip(tileLayers.osm.osm, tile))));
   //writeFileMapNames();
   done(null, osmRoads);
 
@@ -33,14 +33,14 @@ function writeFileMapNames(){
 }
 
 
-function clip(lines, tile) {
+function clip(geoms, tile) {
 
-  lines.features = lines.features.map(function(line) {
+  geoms.features = geoms.features.map(function(geom) {
 
     try {
 
-      var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
-      clipped.properties = line.properties;
+      var clipped = turf.intersect(geom, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
+      clipped.properties = geom.properties;
       return clipped;
 
     } catch(e){
@@ -51,50 +51,19 @@ function clip(lines, tile) {
     }
   });
 
-  lines.features = lines.features.filter( function(line) {
+  geoms.features = geoms.features.filter( function(geom) {
 
-    if(line) return true;
+    if (geom) return true;
   
   });
 
-  return lines;
+  return geoms;
 }
 
+function isValidStreet(line) {
 
-function cleanLines (lines) {
-  
-  const logStream = fs.createWriteStream( path.join(__dirname, `data/list.csv`), {encoding: 'utf8', flags: 'a'});
+  return isLine(line.geometry.type) && isValidHighway(line.properties);
 
-  lines.features = lines.features.filter( function(line) {
-
-    if (isLine(line.geometry.type) && isValidHighway(line.properties)) {
-      
-      const roadName = line.properties.name;
-     
-      if (line.properties.name && isValidRoadname(line.properties.name)) {
-
-        if (!listStreetNames.has(line.properties.name)) {
-          
-          const cleanName = cleanRoadName(roadName, currentLang);          
-          logStream.write(`${line.properties.name};${cleanName}\n`);
-          listStreetNames.add(line.properties.name);                   
-        }
-
-        line.properties = {
-          name: line.properties.name,
-          id: line.properties['@id'],
-          wikipedia_link: '',
-          gender: 'unknown',
-          scale: ''
-        };
-
-        return true;
-      }
-    }
-  });
-
-  logStream.end('\n');
-  return lines;
 }
 
 
@@ -118,25 +87,67 @@ function isValidRoadname(roadName){
   return (roadName !== undefined &&  roadName !== 'undefined' && !(/\d/.test(roadName) || roadName.match(/main/i) || roadName.match(/Torrent/i) || roadName.match(/Viaducte/i) || roadName.match(/Carretera/i) || roadName.match(/Túnel/i) || roadName.match(/Ctra/i) || roadName.match(/Viaducte/i) || roadName.match(/Moll/i) || roadName.match(/Accés/i) || roadName.match(/Carril/i) || roadName.match(/Costa/i) || roadName.match(/Corriol/i) || roadName.match(/Pista/i) || roadName.match(/Autovia/i)) );
 }
 
+function isValidStreet(line) {
+
+  return isLine(line.geometry.type) && isValidHighway(line.properties);
+
+}
+
+function isValidSquare(geom) {
+
+  return (
+    geom.geometry.type === 'Polygon' &&
+    geom.properties.highway &&
+    geom.properties.highway === 'pedestrian'&&
+    geom.properties.area &&
+    geom.properties.area === 'yes'
+    && geom.properties.name !== undefined
+  );
+
+}
+
+
+function cleanGeoms (geoms) {
+  
+  const logStream = fs.createWriteStream( path.join(__dirname, `data/list.csv`), {encoding: 'utf8', flags: 'a'});
+
+  geoms.features = geoms.features.filter( function(geom) {
+
+    if (isValidStreet(geom) || isValidSquare(geom) ) {
+      
+      const roadName = geom.properties.name;
+     
+      if (geom.properties.name && isValidRoadname(geom.properties.name)) {
+
+        if (!listStreetNames.has(geom.properties.name)) {
+          
+          const cleanName = currentLangs.reduce((name, lang) =>
+            cleanRoadName(name, lang)
+          , roadName);
+          
+          logStream.write(`${geom.properties.name};${cleanName}\n`);
+          listStreetNames.add(geom.properties.name);                   
+        }
+
+        geom.properties = {
+          name: geom.properties.name,
+          id: geom.properties['@id'],
+          wikipedia_link: '',
+          gender: 'unknown',
+          scale: ''
+        };
+
+        return true;
+      }
+    } 
+  });
+
+  logStream.end('\n');
+  return geoms;
+}
+
 
 function cleanRoadName(roadName, lang = 'es'){
-
-  /*Catalan*/
-  //var filterList = ['Avinguda', 'avinguda', 'Túnel', 'Camí', 'Carrer', 'Ctra.', 'Passatge', 'Ronda', 'Passeig', 'Viaducte', 'Via', 'carrer', 'Torrent', 'camí', 'Rotonda', 'Plaça', 'Jardins', 'Jardí', 'Parc', 'Accés', 'Baixada', 'Rambla', 'Travessera', 'travessera', 'Riera', 'plaça', 'Gran', 'Passage', 'Placeta', 'Sant', 'antiga', 'Ptge.', 'Pont', 'Travessia', 'la', 'Cerrer', 'Pla', 'Marquès', 'Av.', 'Antic', 'Cami', 'sendero', 'entrada', 'avinguda', 'cami', 'passeig', 'Nostra', 'passatge', 'Pista', 'Corriol', 'Costa'];
-  //var filterList2 = ['de la ', 'de l\'', 'de les ', 'dels ', 'del ', 'de ', 'd\'']; 
- 
-
-  /*Spanish*/
-  /* const filterList = ['Paseo','Río', 'Avenida', 'Hacienda', 'Puerto', 'Callejón', 'Calle', 'Calzada', 'Camino', 'Av.','Paso', 'Cañada', 'Minas', 'Cerrada', 
-    'Puebla', 'Principal', 'Central','Primera', 'Segunda', 'Portón', 'Lateral', 'Calz.', 'Corrido', 'Casa', 'Villa', 'Mejía', 
-    'Vía', 'Via', 'Real', 'Isla', 'Avendida', 'Marisma', 'Rada', 'Raudal', 'Ribera', 'Embocadura', 'Cataratas', 'Médanos', 
-    'Mirador', 'Av', 'Jardín',  'A.', 'Circuito','Gral.', 'Rincón', 'Calz', 'Rinconada', 'Periférico', 'Cda', 'Jardin', 
-    'C.', 'Callejon', 'Colegio', 'Valle', 'avenida', 'camino', 'calle', 'Calle', 'Rotonda', 'Parqueo', 'Parque', 'entrada', 
-    'Entrada', 'sendero', 'Sendero', 'Pasaje', 'pasaje', 'Puerto', 'Ciudad', 'Puente', 'Boulevard', 'Agrosuperior', 'Bodegas', 
-    'Autobanco', 'SkyTrace', 'Plaza', 'Motel', 'C/', 'Rotonda', 'Drive', 'Residencial', 'Automac', 
-    'Auto', 'Transcersal', 'Inter', 'Pasillo', 'Centro', 'Caminito', 'Arandas', 'Proveedores', 'Cajero', 'Zona', 'Primer', 'Res.'
-  ];
-  const filterList2 = ['de las ', 'de la ', 'de los ', 'de lo ', 'del ', 'de ', 'en ']; */
 
   const filterList = filters[lang].filter01;
   const filterList2 = filters[lang].filter02;
