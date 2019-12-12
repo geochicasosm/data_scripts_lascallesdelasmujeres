@@ -13,6 +13,8 @@
   "author": "Jessica Sena",
   "license": "MIT",
   "dependencies": {
+    "@turf/boolean-contains": "^6.0.1",
+    "@turf/flatten": "^5.1.5",
     "binary-split": "^0.1.2",
     "fs": "0.0.1-security",
     "fuse.js": "^3.2.0",
@@ -25,6 +27,7 @@
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.2",
     "progress": "^1.1.8",
+    "query-overpass": "^1.5.5",
     "request": "^2.67.0",
     "shapefile": "^0.3.0",
     "shapefile-stream": "0.0.4",
