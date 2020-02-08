@@ -5,7 +5,7 @@ const fs = require('fs');
 const args = require('yargs').argv;
 const  path = require('path');
 
-const folder = (args.ciudad ? args.ciudad : 'ciudad');
+const folder = (args.c ? args.c : 'ciudad');
 
 const MALE = "male";
 const FEMALE = "female";

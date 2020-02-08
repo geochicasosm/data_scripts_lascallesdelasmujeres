@@ -8,7 +8,7 @@ const Fuse = require('fuse.js');
 const wikipediaDic = require('./constants').wikipediaDic;
 
 
-const folder = (args.ciudad ? args.ciudad : 'ciudad');
+const folder = args.c ? args.c : 'city';
 const streetMap = new Set();
 
 const COL_FULL_NAME = 0;
@@ -34,9 +34,9 @@ function startProcess(){
             initReadFile(filtered_stream);           
         });        
 
-      } catch (err) {
+        } catch (err) {
         console.error(err);
-      } 
+        } 
 }
 
 function initReadFile(stream){

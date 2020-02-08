@@ -1,5 +1,16 @@
 const filters = require('./constants').filters;
 const processCity = require('./clip_street').processCity;
+const applyGender = require('./apply_gender').applyGender;
+
+async function continueProcess(ciudad, relationIdOSM, currentLangs = ["es"]) {
+ 
+	const res = await doClipCity(ciudad, relationIdOSM);
+ 
+	console.log('-------------- start applying gender...');
+	await applyGender(ciudad, currentLangs, cleanRoadName);
+
+ 
+ }
 
 function cleanRoadName(roadName, lang = 'es') {
 
@@ -26,26 +37,28 @@ function cleanRoadName(roadName, lang = 'es') {
 	return roadName;
 }
 
-function doClipCity(city, relationId) {
+async function doClipCity(city, relationId) {
 
-	try {
-		console.log('city       : ', city);
-		console.log('relation id: ', relationId);
 
-		processCity(city, relationId)
-			.then(() => {
-				console.log('Done!!')
-				process.exit(0);
-			});
+		try {
+			console.log('city       : ', city);
+			console.log('relation id: ', relationId);
+	
+			await processCity(city, relationId);
+			console.log('Done!!')
 
-	} catch (error) {
-		console.log('Something went wrong:', error.message);
-		process.exit(1)
-	}
+			return 0;
+	
+		} catch (error) {
+			console.log('Something went wrong:', error.message);
+			return 1;
+		}
+	
+
 
 }
 
 module.exports = {
 	cleanRoadName,
-	doClipCity
+	continueProcess
 }

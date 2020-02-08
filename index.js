@@ -3,14 +3,13 @@
 const path = require('path');
 const fs = require('fs');
 let tilereduce = require('tile-reduce');
-const args = require('yargs').argv;
-const doClipCity = require('./scripts/commons').doClipCity;
+const continueProcess = require('./scripts/commons').continueProcess;
 
 const args = require('yargs')
   .usage('Pass a city name, its area and its OSM relation ID ')
   .epilog('GeoChicas OSM 2020')
   .alias('h', 'help')
-  .alias('ciudad', 'city')
+  .alias('c', 'city')
   .alias('r', 'relation')
   .alias('a', 'area')
   .describe('c', 'City in your data folder')
@@ -28,10 +27,7 @@ function printArgs() {
 }
 
 
-
 function execReduce() {
-
-
 
   const opts = {
 
@@ -48,7 +44,7 @@ function execReduce() {
 
   if (args.area) opts.bbox = JSON.parse(args.area);
 
-  const ciudad = args.ciudad ? args.ciudad : 'ciudad';
+  const city = args.city ? args.city : 'city';
   const relationIdOSM = args.relation ? args.relation : 1;
 
   let num = 0;
@@ -76,13 +72,13 @@ function execReduce() {
 
     .on('end', function (error) {
 
-      const geojsonPath = path.join(__dirname, `data/${ciudad}/${ciudad}_streets_noclip.geojson`);
+      const geojsonPath = path.join(__dirname, `data/${city}/${city}_streets_noclip.geojson`);
       fs.writeFileSync(geojsonPath, JSON.stringify(finalGeojson), function (err) {});
       console.log(`${num} tiles has been processed.`);
       console.log('--------------------- END processing mbtiles -----------------------');
 
       console.log('--------------------- Start clipping...')
-      doClipCity(ciudad, relationIdOSM);
+      continueProcess(city, relationIdOSM);
 
     });
 
