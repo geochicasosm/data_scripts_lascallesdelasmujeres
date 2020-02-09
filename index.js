@@ -36,7 +36,7 @@ function execReduce() {
     zoom: 12,
     sources: [{
       name: 'osm',
-      mbtiles: path.join(__dirname, 'data/spain.mbtiles')
+      mbtiles: path.join(__dirname, 'data/planet.mbtiles')
     }],
     maxWorkers: 4,
     map: path.join(__dirname, 'map.js')
@@ -76,8 +76,6 @@ function execReduce() {
       fs.writeFileSync(geojsonPath, JSON.stringify(finalGeojson), function (err) {});
       console.log(`${num} tiles has been processed.`);
       console.log('--------------------- END processing mbtiles -----------------------');
-
-      console.log('--------------------- Start clipping...')
       continueProcess(city, relationIdOSM);
 
     });

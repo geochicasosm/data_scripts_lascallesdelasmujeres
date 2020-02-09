@@ -8,7 +8,7 @@ const Fuse = require('fuse.js');
 const wikipediaDic = require('./constants').wikipediaDic;
 
 
-const folder = args.c ? args.c : 'city';
+const folder = args.city ? args.city : 'city';
 const streetMap = new Set();
 
 const COL_FULL_NAME = 0;
@@ -17,7 +17,7 @@ const COL_NAME = 2;
 const COL_SURNAME = 3;
 const COL_FIABILIDAD = 4;
 const COL_GENDER = 5;
-const COL_WIKIPEDIA = 6;
+const COL_WIKIPEDIA = 8;
 
 const MALE = "male";
 const FEMALE = "female";
@@ -29,7 +29,7 @@ function startProcess(){
     try {
         const filtered_stream = fs.createWriteStream(path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`), {'flags': 'a'});
         filtered_stream.once('open', function(fd) {
-            filtered_stream.write(`calle;calleClean;name;surname;fiabilidad;gender;wikipedia`);
+            filtered_stream.write(`calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia`);
             filtered_stream.write('\n');
             initReadFile(filtered_stream);           
         });        

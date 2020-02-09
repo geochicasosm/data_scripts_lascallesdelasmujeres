@@ -44,6 +44,8 @@ Instrucciones
 
 Buscar [AQUÍ](http://tools.geofabrik.de/calc/) la BBOX de la ciudad a tratar.
 
+Buscar  [AQUÍ](https://www.openstreetmap.org/relation/11) el ID de OSM de la ciudad a tratar.
+
 Crear una carpeta dentro de la carpeta "data" del proyecto, con el nombre de la ciudad a tratar, en minúsculas y sin espacios. Ejemplos: 
 
  **barcelona** 
@@ -53,41 +55,29 @@ Crear una carpeta dentro de la carpeta "data" del proyecto, con el nombre de la 
  **buenosaires** 
 
 
- 
 ### _Paso 2_
 
 Ejecutar:
 
 ```
-npm run step1 -- --area=[bbox] --ciudad=nombreciudad
+npm run initial-step -- --area=[bbox] --city=nombreciudad --relation=relationID
 ```
 
-* Ejemplo: **npm run step1 -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona** 
+* Ejemplo: **npm run initial-step -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona --relation=349035** 
 
 
-Se generan dos ficheros:
+Se generan los ficheros:
 * nombreciudad_streets.geojson
 * list.csv
+* list_genderize.csv
 
 
 ### _Paso 3_
 
-Aplicar la clasificación del listado anterior en nombres masculinos o femeninos:
-
-
-```
-npm run step2 -- --ciudad=nombreciudad
-```
-
-Se genera el fichero 'list_genderize.csv' como resultado.
-
-
-### _Paso 4_
-
 Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
 
 ```
-npm run step3 -- --ciudad=nombreciudad
+npm run wikipedia-step -- --ciudad=nombreciudad
 ```
 
 Se genera el fichero 'list_genderize_wikipedia.csv'.
@@ -125,7 +115,7 @@ Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 Ejecutar:
 
 ```
-npm run step4 -- --ciudad=nombreciudad
+npm run final-step -- --ciudad=nombreciudad
 ```
 
 Se generan tres ficheros:

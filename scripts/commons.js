@@ -4,12 +4,12 @@ const applyGender = require('./apply_gender').applyGender;
 
 async function continueProcess(ciudad, relationIdOSM, currentLangs = ["es"]) {
  
+	console.log('--------------------- Start clipping...')
 	const res = await doClipCity(ciudad, relationIdOSM);
- 
-	console.log('-------------- start applying gender...');
-	await applyGender(ciudad, currentLangs, cleanRoadName);
-
- 
+	if(res) {
+		console.log('--------------------- Start applying gender...');
+		await applyGender(ciudad, currentLangs, cleanRoadName);
+	}
  }
 
 function cleanRoadName(roadName, lang = 'es') {
@@ -45,13 +45,13 @@ async function doClipCity(city, relationId) {
 			console.log('relation id: ', relationId);
 	
 			await processCity(city, relationId);
-			console.log('Done!!')
+			console.log('DONE')
 
-			return 0;
+			return true;
 	
 		} catch (error) {
 			console.log('Something went wrong:', error.message);
-			return 1;
+			return false;
 		}
 	
 
