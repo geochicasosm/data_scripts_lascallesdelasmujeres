@@ -1,3 +1,6 @@
+
+***Outdated: check spanish version***
+
 # SCRIPTS to generate data for the project #LasCallesDeLasMujeres
 
 Visit the web project: [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) (in beta)

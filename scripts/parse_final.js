@@ -5,7 +5,7 @@ const fs = require('fs');
 const args = require('yargs').argv;
 const  path = require('path');
 
-const folder = (args.c ? args.c : 'ciudad');
+const folder = (args.city ? args.city : 'ciudad');
 
 const MALE = "male";
 const FEMALE = "female";
@@ -15,7 +15,9 @@ const COL_NAME = 2;
 const COL_SURNAME = 3;
 const COL_FIABILIDAD = 4;
 const COL_GENDER = 5;
-const COL_WIKIPEDIA = 6;
+const COL_CATEGORY = 6;
+const COL_TYPE_OF_ROAD = 7;
+const COL_WIKIPEDIA = 8;
 const DELIMITATION = ";";
 
 const streeMap = new Map();
@@ -49,7 +51,9 @@ lr.on('line', function (line) {
         streeMap.set(splitLine[COL_FULL_NAME], {
             url: url,
             gender: splitLine[COL_GENDER],
-            scale: ""
+            scale: "",
+            category: splitLine[COL_CATEGORY],
+            typeofroad: splitLine[COL_TYPE_OF_ROAD],
         });
 
         lr.resume();
@@ -106,6 +110,8 @@ function readGeojson() {
                 geojson.features[key].properties.wikipedia_link = objValues.url;
                 geojson.features[key].properties.gender = objValues.gender;
                 geojson.features[key].properties.scale = objValues.scale;
+                geojson.features[key].properties.category = objValues.category;
+                geojson.features[key].properties.typeofroad = objValues.typeofroad;
                 
                 if(!tratadosList.has(geojson.features[key].properties.name)){
 

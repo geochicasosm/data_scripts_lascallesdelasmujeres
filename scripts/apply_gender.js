@@ -138,21 +138,21 @@ function applyGender(folder, currentLangs, cleanRoadName) {
 
             if (isWoman) {
 
-                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};2;Female`);
+                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};2;Female;-;-`);
                 stream.write('\n');
                 numFindWomen++;
                 lr.resume();
 
             } else if (isMan) {
 
-                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};-2;Male`);
+                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};-2;Male;-;-`);
                 stream.write('\n');
                 numFindMen++;
                 lr.resume();
 
             } else {
 
-                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};0;Unknown`);
+                stream.write(`${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};0;Unknown;-;-`);
                 stream.write('\n');
                 numUnknown++;
                 lr.resume();
