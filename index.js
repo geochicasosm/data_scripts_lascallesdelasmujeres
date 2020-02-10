@@ -6,7 +6,7 @@ let tilereduce = require('tile-reduce');
 const continueProcess = require('./scripts/commons').continueProcess;
 
 const args = require('yargs')
-  .usage('Pass a city name, its area and its OSM relation ID ')
+  .usage('INITIAL STEP: Pass a city name, its area and its OSM relation ID ')
   .epilog('GeoChicas OSM 2020')
   .alias('h', 'help')
   .alias('c', 'city')
@@ -36,7 +36,7 @@ function execReduce() {
     zoom: 12,
     sources: [{
       name: 'osm',
-      mbtiles: path.join(__dirname, 'data/planet.mbtiles')
+      mbtiles: path.join(__dirname, 'data/spain.mbtiles')
     }],
     maxWorkers: 4,
     map: path.join(__dirname, 'map.js')

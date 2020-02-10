@@ -2,8 +2,15 @@
 
 const LineByLineReader = require('line-by-line');
 const fs = require('fs');
-const args = require('yargs').argv;
 const  path = require('path');
+const args = require('yargs')
+  .usage('FINAL STEP: Pass a city name')
+  .epilog('GeoChicas OSM 2020')
+  .alias('h', 'help')
+  .alias('c', 'city')
+  .describe('c', 'City in your data folder')
+  .demandOption(['c'])
+  .argv;
 
 const folder = (args.city ? args.city : 'ciudad');
 

@@ -63,7 +63,7 @@ Ejecutar:
 npm run initial-step -- --area=[bbox] --city=nombreciudad --relation=relationID
 ```
 
-* Ejemplo: **npm run initial-step -- --area=[2.0875,41.2944,2.2582,41.4574] --ciudad=barcelona --relation=349035** 
+* Ejemplo: **npm run initial-step -- --area=[2.0875,41.2944,2.2582,41.4574] --city=barcelona --relation=349035** 
 
 
 Se generan los ficheros:
@@ -77,7 +77,7 @@ Se generan los ficheros:
 Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
 
 ```
-npm run wikipedia-step -- --ciudad=nombreciudad
+npm run wikipedia-step -- --city=nombreciudad
 ```
 
 Se genera el fichero 'list_genderize_wikipedia.csv'.
@@ -115,7 +115,7 @@ Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 Ejecutar:
 
 ```
-npm run final-step -- --ciudad=nombreciudad
+npm run final-step -- --city=nombreciudad
 ```
 
 Se generan tres ficheros:
