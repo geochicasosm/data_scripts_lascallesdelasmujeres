@@ -36,7 +36,7 @@ function execReduce() {
     zoom: 12,
     sources: [{
       name: 'osm',
-      mbtiles: path.join(__dirname, 'data/spain.mbtiles')
+      mbtiles: path.join(__dirname, 'data/planet.mbtiles')
     }],
     maxWorkers: 4,
     map: path.join(__dirname, 'map.js')
