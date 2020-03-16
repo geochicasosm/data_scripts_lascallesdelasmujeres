@@ -22,7 +22,7 @@
     "join-stream": "0.0.0",
     "line-by-line": "^0.1.6",
     "lineclip": "^1.1.5",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.2",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.5",
     "progress": "^1.1.8",
