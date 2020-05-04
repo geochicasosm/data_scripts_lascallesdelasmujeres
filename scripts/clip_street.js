@@ -48,11 +48,45 @@ async function getBoundary(id) {
   });
 }
 
+
+function getOverPassData(square, index, city){
+  return new Promise((resolve, reject) => {
+    const bboxSquare = bbox(square.geometry);
+    const query = `way(${bboxSquare[1]},${bboxSquare[0]},${bboxSquare[3]},${bboxSquare[2]})
+              [highway~"^(pedestrian|footway|residential|unclassified|trunk|service|bridge|path|living_street|primary|secondary|tertiary)$"];
+              (._;>;);
+              out;`;
+
+    console.log(`overpass query.... ${index}`);
+    const overpassResults = overpass(query, async (error, data) => {
+      if (error) {
+        console.log(`Something happenned with request ${index}:${overpassResults}`, error);
+        reject(error);
+      } else {
+        //console.log(`data ${index}`, data);
+        const relationFeatures = data.features.filter(
+          (feature) =>
+            feature.geometry.type === 'LineString' || feature.geometry.type === 'Polygon'
+        );
+
+        const geojsonPath = path.join(
+          __dirname,
+          `../data/${city}/${city}_streets_grid${index}.geojson`
+        );
+        writeFeatures(geojsonPath, relationFeatures);
+        //return relationFeatures;
+        resolve(relationFeatures);
+      }
+    });
+    console.log(`FI overpass query.... ${index}:${overpassResults}`);
+  });
+}
+
 // Returns a promise with the relation feature
 async function getStreetsByBBOX(bboxCity) {
   const city = 'madrid';
   //const bboxCity = [-3.945465, 40.145289, 54.84375, 67.407487];
-  const cellSide = 20;
+  const cellSide = 15;
   const options = { units: 'kilometers' };
   const grid = squareGrid(bboxCity, cellSide, options);
 
@@ -61,18 +95,30 @@ async function getStreetsByBBOX(bboxCity) {
     console.log(err);
   });
 
-  const promises = grid.features.map((square, index) => {
-    return new Promise((resolve, reject) => {
+  let index = 0;
+  for(const square of grid.features) {
+
+    const overpassResults = await getOverPassData(square, index, city);
+    console.log(`result ${index}`, overpassResults.length);
+    index++;
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+
+
+  /* const promises = grid.features.map(async (square, index) => {
+    //return new Promise((resolve, reject) => {
       const bboxSquare = bbox(square.geometry);
       const query = `way(${bboxSquare[1]},${bboxSquare[0]},${bboxSquare[3]},${bboxSquare[2]})
                 [highway~"^(pedestrian|footway|residential|unclassified|trunk|service|bridge|path|living_street|primary|secondary|tertiary)$"];
                 (._;>;);
                 out;`;
 
-      overpass(query, (error, data) => {
+      console.log(`overpass query.... ${index}`);
+      const overpassResults = await overpass(query, async (error, data) => {
         if (error) {
-          console.log('Something happened', error);
-          reject(error);
+          console.log(`Something happenned with request ${index}:${overpassResults}`, error);
+          //reject(error);
+          return [];
         } else {
           //console.log(`data ${index}`, data);
           const relationFeatures = data.features.filter(
@@ -85,14 +131,18 @@ async function getStreetsByBBOX(bboxCity) {
             `../data/${city}/${city}_streets_grid${index}.geojson`
           );
           writeFeatures(geojsonPath, relationFeatures);
-
-          resolve(relationFeatures);
+          return relationFeatures;
+          //resolve(relationFeatures);
         }
       });
-    });
-  });
+      console.log(`FI overpass query.... ${index}:${overpassResults}`);
+    //});
 
-  const results = await Promise.allSettled(promises); //.then((results) =>
+
+
+  }); */
+
+/*   const results = await Promise.allSettled(promises); //.then((results) =>
   results.forEach((result) => console.log(result.status));
 
   return results.reduce((acum, current) => {
@@ -100,7 +150,7 @@ async function getStreetsByBBOX(bboxCity) {
       acum = [...acum, ...current.value];
     }
     return acum;
-  }, []);
+  }, []); */
 }
 
 // Writes a GeoJSON into the passed file path
@@ -125,7 +175,7 @@ const processCity = async function (city, relationId) {
     features: cityBoundaries,
   });
   const features = await getStreetsByBBOX(cityBBOX);
-  console.log(`${features.length} features on you GeoJSON file`);
+  //console.log(`${features.length} features on you GeoJSON file`);
 
   /*   // Get the original (square) geojson data
   const features = getFeatures(city);
@@ -133,7 +183,7 @@ const processCity = async function (city, relationId) {
 */
 
   // Find if a feature intersects with any of the city boundaries
-  const filteredFeatures = features.filter((feature) => {
+/*   const filteredFeatures = features.filter((feature) => {
     return cityBoundaries.find((boundary) => {
       return booleanContains(boundary, feature);
     });
@@ -144,7 +194,7 @@ const processCity = async function (city, relationId) {
   const filteredFeaturesPath = path.join(process.cwd(), 'data', city, city + '_streets.geojson');
   console.log('Writing the result at: ', filteredFeaturesPath);
 
-  writeFeatures(filteredFeaturesPath, filteredFeatures);
+  writeFeatures(filteredFeaturesPath, filteredFeatures); */
 };
 
 module.exports = {
