@@ -27,13 +27,6 @@ Instalación de paquetes:
 npm install
 ```
 
-Descargar [AQUÍ](http://osmlab.github.io/osm-qa-tiles/) el planet completo de OSM (o la zona que interese) y guardar en una carpeta llamada "data", dentro de la carpeta del proyecto.  
-(Tome en cuenta que si desea descargar sólo el paquete de la zona que interese, debe renombrar el archivo descomprimido a "latest.planet.mbtiles")
-
-```
-./data/latest.planet.mbtiles
-```
-
 # Instrucciones
 
 ### _Paso 1_
@@ -133,7 +126,7 @@ Haznos llegar los tres ficheros generados y añadiremos tu ciudad al mapa!
 
 ## Coordinadora Técnica
 
-- **Jessica Sena** (_España_) - [@jsenag](https://jessisena.github.io/myprofile/)
+- **Jessica Sena** (_España_) - [@jsenag](https://jessisena.github.io/myprofile-cra/)
   Ingeniera informática, desarrolladora web/móvil en ámbito geo.
 
 ## Licencia
@@ -146,8 +139,5 @@ This project is licensed under _CC BY-SA_ License - see the [CC BY-SA](https://c
 
 - [Open Street Map](https://www.openstreetmap.org/)
 
-- [NameSor](http://api.namsor.com/onomastics/api/)
-
 - [Wikipedia API](https://www.mediawiki.org/wiki/API:Main_page/es)
 
-- [Geofabrik](http://tools.geofabrik.de/calc/)
