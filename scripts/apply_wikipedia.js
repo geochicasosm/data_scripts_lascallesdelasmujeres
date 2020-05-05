@@ -4,7 +4,7 @@ const LineByLineReader = require('line-by-line');
 const fs = require('fs');
 const  path = require('path');
 const Fuse = require('fuse.js');
-const wikipediaDic = require('./constants').wikipediaDic;
+const wikipediaDic = require('./wikipedia_dic').wikipediaDic;
 
 const args = require('yargs')
   .usage('WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. ')
@@ -23,24 +23,24 @@ const streetMap = new Set();
 
 const COL_FULL_NAME = 0;
 const COL_CLEAN_NAME = 1;
-const COL_NAME = 2;
+/* const COL_NAME = 2;
 const COL_SURNAME = 3;
-const COL_FIABILIDAD = 4;
+const COL_FIABILIDAD = 4; */
 const COL_GENDER = 5;
-const COL_WIKIPEDIA = 8;
+/* const COL_WIKIPEDIA = 8; */
 
-const MALE = "male";
-const FEMALE = "female";
-const UNKNOWN = "unknown";
+const MALE = 'male';
+const FEMALE = 'female';
+const UNKNOWN = 'unknown';
 
 function startProcess(){
 
-    console.log("Starting wikipedia link search process...");
+    console.log('Starting wikipedia link search process...');
 
     try {
         const filtered_stream = fs.createWriteStream(path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`), {'flags': 'a'});
-        filtered_stream.once('open', function(fd) {
-            filtered_stream.write(`calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia`);
+        filtered_stream.once('open', function() {
+            filtered_stream.write('calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia');
             filtered_stream.write('\n');
             initReadFile(filtered_stream);           
         });        
@@ -52,7 +52,7 @@ function startProcess(){
 
 function initReadFile(stream){
 
-    console.log("init read file list_genderize.csv-");
+    console.log('init read file list_genderize.csv-');
 
     const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/list_genderize.csv`), { encoding: 'utf8', skipEmptyLines: true });
 
@@ -80,7 +80,7 @@ function initReadFile(stream){
             streetMap.add(splitLine[COL_FULL_NAME]);
 
             const result = myfuse.search(`${splitLine[COL_CLEAN_NAME]}`);
-            const url = (result.length > 0 ? result[COL_FULL_NAME] : "");
+            const url = (result.length > 0 ? result[COL_FULL_NAME] : '');
 
             stream.write(`${line};${url}`);
             stream.write('\n');
@@ -109,7 +109,7 @@ function initReadFile(stream){
 }
 
 var options = {
-    id: "sitelink",
+    id: 'sitelink',
     shouldSort: true,
     threshold: 0.6,
     location: 0,
@@ -117,7 +117,7 @@ var options = {
     maxPatternLength: 32,
     minMatchCharLength: 1,
     keys: [
-      "itemLabel"
+      'itemLabel'
     ]
   };
 const myfuse = new Fuse(wikipediaDic, options);
