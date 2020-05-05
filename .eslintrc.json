@@ -8,8 +8,8 @@
     "sourceType": "module",
     "ecmaVersion": 2017
   },
+  "parser": "babel-eslint",
   "rules": {
-    "linebreak-style": ["error", "windows"],
     "quotes": ["error", "single"],
     "semi": ["error", "always"]
   }

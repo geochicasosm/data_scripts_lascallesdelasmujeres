@@ -1,16 +1,38 @@
 'use strict';
 
+const filters = require('./filters').filters;
 const LineByLineReader = require('line-by-line');
 const fs = require('fs');
 const path = require('path');
 
-function applyGender(folder, currentLangs, cleanRoadName) {
+function cleanRoadName(roadName, lang = 'es') {
+  const filterList = filters[lang].filter01;
+  const filterList2 = filters[lang].filter02;
+
+  for (var i = 0; i < filterList.length; i++) {
+    if (roadName.indexOf(filterList[i]) !== -1) {
+      var name = roadName.replace(filterList[i], '').trim();
+
+      for (var j = 0; j < filterList2.length; j++) {
+        if (name.indexOf(filterList2[j]) !== -1) {
+          name = name.replace(filterList2[j], '').trim();
+        }
+      }
+
+      return name;
+    }
+  }
+  return roadName;
+}
+
+function applyGender(folder, currentLangs = ['es']) {
   const womenDic = new Set();
   const menDic = new Set();
 
   let numFindWomen = 0;
   let numFindMen = 0;
   let numUnknown = 0;
+  let numNoName = 0;
 
   const INDEX_FULL_NAME = 0;
   const INDEX_CLEAN_NAME = 1;
@@ -20,7 +42,7 @@ function applyGender(folder, currentLangs, cleanRoadName) {
   }
 
   function initWomenDic() {
-    const lr = new LineByLineReader(path.join(__dirname, `../namesDB/list_mujeres.csv`), {
+    const lr = new LineByLineReader(path.join(__dirname, '../namesDB/list_mujeres.csv'), {
       encoding: 'utf8',
       skipEmptyLines: true,
     });
@@ -43,7 +65,7 @@ function applyGender(folder, currentLangs, cleanRoadName) {
   }
 
   function initMenDic() {
-    const lr = new LineByLineReader(path.join(__dirname, `../namesDB/list_hombres.csv`), {
+    const lr = new LineByLineReader(path.join(__dirname, '../namesDB/list_hombres.csv'), {
       encoding: 'utf8',
       skipEmptyLines: true,
     });
@@ -75,7 +97,7 @@ function applyGender(folder, currentLangs, cleanRoadName) {
             flags: 'a',
           }
         );
-        gender_stream2.once('open', async function (fd) {
+        gender_stream2.once('open', async function () {
           await initReadFile(gender_stream2);
           resolve();
         });
@@ -151,6 +173,7 @@ function applyGender(folder, currentLangs, cleanRoadName) {
     lr.on('end', function () {
       stream.end();
       console.log('--------------');
+      console.log('Calles sin nombre: ', numNoName);
       console.log('Nombres de mujer encontrados en el diccionario: ', numFindWomen);
       console.log('Nombres de hombre encontrados en el diccionario: ', numFindMen);
       console.log('Nombre desconocidos: ', numUnknown);
@@ -175,7 +198,10 @@ function applyGender(folder, currentLangs, cleanRoadName) {
 
   function prepareListCSV() {
     fs.open(path.join(__dirname, `/../data/${folder}/list.csv`), 'w', function (err, file) {
-      if (err) throw err;
+      if (err) {
+        console.error(`Error opening file ${file}`, err);
+        throw err;
+      }
 
       const logStream = fs.createWriteStream(path.join(__dirname, `/../data/${folder}/list.csv`), {
         encoding: 'utf8',
@@ -192,16 +218,20 @@ function applyGender(folder, currentLangs, cleanRoadName) {
 
           const geojson = JSON.parse(data);
 
-          for (let key in geojson.features) {
-            const geom = geojson.features[key];
-            const roadName = geom.properties.name;
-            const cleanName = currentLangs.reduce(
-              (name, lang) => cleanRoadName(name, lang),
-              roadName
-            );
+          for (const feature of geojson.features) {
+            if (feature.properties && feature.properties.name) {
+              const roadName = feature.properties.name;
+              const cleanName = currentLangs.reduce(
+                (name, lang) => cleanRoadName(name, lang),
+                roadName
+              );
 
-            logStream.write(`${geom.properties.name};${cleanName}\n`);
+              logStream.write(`${feature.properties.name};${cleanName}\n`);
+            } else {
+              numNoName++;
+            }
           }
+
           logStream.end('\n');
 
           initDictionaryObjects();

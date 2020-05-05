@@ -16,10 +16,10 @@ const folder = args.city ? args.city : 'ciudad';
 const MALE = 'male';
 const FEMALE = 'female';
 const COL_FULL_NAME = 0;
-const COL_CLEAN_NAME = 1;
+/* const COL_CLEAN_NAME = 1;
 const COL_NAME = 2;
 const COL_SURNAME = 3;
-const COL_FIABILIDAD = 4;
+const COL_FIABILIDAD = 4; */
 const COL_GENDER = 5;
 const COL_CATEGORY = 6;
 const COL_TYPE_OF_ROAD = 7;
@@ -32,7 +32,7 @@ const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/${folder
   skipEmptyLines: true,
 });
 
-lr.on('error', function (err) {});
+lr.on('error', function (/* err */) {});
 
 lr.on('line', function (line) {
   lr.pause();

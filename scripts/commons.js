@@ -1,64 +1,20 @@
-const filters = require('./constants').filters;
-const processCity = require('./clip_street').processCity;
-const applyGender = require('./apply_gender').applyGender;
+'use strict';
 
-async function continueProcess(ciudad, relationIdOSM, currentLangs = ["es"]) {
- 
-	console.log('--------------------- Start clipping...')
-	const res = await doClipCity(ciudad, relationIdOSM);
-	if(res) {
-		console.log('--------------------- Start applying gender...');
-		await applyGender(ciudad, currentLangs, cleanRoadName);
-	}
- }
+const fs = require('fs');
 
-function cleanRoadName(roadName, lang = 'es') {
 
-	const filterList = filters[lang].filter01;
-	const filterList2 = filters[lang].filter02;
-
-	for (var i = 0; i < filterList.length; i++) {
-
-		if (roadName.indexOf(filterList[i]) !== -1) {
-
-			var name = roadName.replace(filterList[i], '').trim();
-
-			for (var j = 0; j < filterList2.length; j++) {
-
-				if (name.indexOf(filterList2[j]) !== -1) {
-					name = name.replace(filterList2[j], '').trim();
-				}
-			}
-
-			return name;
-		}
-
-	}
-	return roadName;
+// Writes a GeoJSON into the passed file path
+function writeFeatures(outputPath, features) {
+	const jsonString = JSON.stringify({
+	  type: 'FeatureCollection',
+	  features: features,
+	});
+  
+	fs.writeFileSync(outputPath, jsonString);
 }
 
-async function doClipCity(city, relationId) {
 
-
-		try {
-			console.log('city       : ', city);
-			console.log('relation id: ', relationId);
-	
-			await processCity(city, relationId);
-			console.log('DONE')
-
-			return true;
-	
-		} catch (error) {
-			console.log('Something went wrong:', error.message);
-			return false;
-		}
-	
-
-
-}
 
 module.exports = {
-	cleanRoadName,
-	continueProcess
-}
+	writeFeatures
+};
