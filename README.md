@@ -13,7 +13,7 @@ Los datos que se visualizan en el proyecto [#LasCallesDeLasMujeres](https://geoc
 Para poder decargar el proyecto y ejecutar los scripts, es necesario tener instalado:
 
 - GIT (Descargar [AQUí](https://git-scm.com/downloads))
-- Node.js versión <10 (Descargar [AQUí](https://nodejs.org/download/release/v9.5.0/))
+- Node.js versión >=12 (Descargar [AQUí](https://nodejs.org/download/release/v0.12.0/))
 
 Descargar el proyecto:
 
