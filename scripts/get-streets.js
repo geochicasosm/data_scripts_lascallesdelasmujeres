@@ -6,9 +6,11 @@ const fs = require('fs');
 const overpass = require('query-overpass');
 const booleanContains = require('@turf/boolean-contains').default;
 const flatten = require('@turf/flatten').default;
-const squareGrid = require('@turf/square-grid').default;
 const bbox = require('@turf/bbox').default;
 const bboxPolygon = require('@turf/bbox-polygon').default;
+const centerOfMass = require('@turf/center-of-mass').default;
+
+const bboxSplit = require('boundingbox-split');
 
 const writeFeatures = require('./commons').writeFeatures;
 
@@ -35,14 +37,15 @@ async function getBoundary(id) {
   });
 }
 
-function getOverPassData(square, index, city, generatePartialGridFile = false) {
+function getOverPassData(squareBBOX, index, city, generatePartialGridFile = false) {
   return new Promise((resolve, reject) => {
-    const bboxSquare = bbox(square.geometry);
-    const query = `way(${bboxSquare[1]},${bboxSquare[0]},${bboxSquare[3]},${bboxSquare[2]})
-				[highway~"^(pedestrian|footway|residential|unclassified|trunk|service|bridge|path|living_street|primary|secondary|tertiary)$"];
-				(._;>;);
-				out;`;
-    console.log(query);
+    const query = `
+      way(${squareBBOX.minLat},${squareBBOX.minLng},${squareBBOX.maxLat},${squareBBOX.maxLng})
+			[highway~"^(pedestrian|footway|residential|unclassified|trunk|service|bridge|path|living_street|primary|secondary|tertiary)$"];
+			(._;>;);
+      out;
+    `;
+
     const overpassResults = overpass(query, async (error, data) => {
       if (error) {
         console.log(`Something happenned with request ${index}:${overpassResults}`, error);
@@ -79,29 +82,41 @@ function getOverPassData(square, index, city, generatePartialGridFile = false) {
   });
 }
 
-async function getStreetsByBBOX(bboxCity, city = 'city', cellSide = 10) {
-  const options = { units: 'kilometers', mask: bboxPolygon(bboxCity) };
-  const grid = squareGrid(bboxCity, cellSide, options);
+async function getGrid(bboxCity, splitFactor = 1) {
+  const polygon = bboxPolygon(bboxCity);
+  const center = centerOfMass(polygon);
 
-  const gridPath = path.join(__dirname, `../data/${city}/${city}_grid.geojson`);
-  fs.writeFileSync(gridPath, JSON.stringify(grid), function (err) {
-    console.log(err);
-  });
+  const boxParameters = {
+    centerLat: center.geometry.coordinates[1],
+    centerLng: center.geometry.coordinates[0],
+    maxLat: bboxCity[3],
+    minLat: bboxCity[1],
+    maxLng: bboxCity[2],
+    minLng: bboxCity[0],
+  };
+
+  const grid = await bboxSplit.boundingBoxCutting(boxParameters, splitFactor);
+  return grid;
+}
+
+async function getStreetsByBBOX(bboxCity, city = 'city') {
+  const grid = await getGrid(bboxCity);
 
   let index = 0;
   const features = [];
-  for (const square of grid.features) {
+  for (const square of grid) {
+    console.log(`Sending request number ${index}`);
     const overpassResults = await getOverPassData(square, index, city);
-    console.log(`result ${index}`, overpassResults.length);
+    console.log(`result ${index}: ${overpassResults.length} features`);
     index++;
     features.push(...overpassResults);
+    console.log('waiting 10s before next request to overpass...');
     await new Promise((resolve) => setTimeout(resolve, 10000));
   }
 
   return features;
 }
 
-// main function
 const processCity = async function (city, relationId) {
   try {
     const cityBoundaries = flatten(await getBoundary(relationId)).features;

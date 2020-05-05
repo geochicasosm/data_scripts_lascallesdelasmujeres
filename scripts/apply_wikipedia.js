@@ -4,7 +4,7 @@ const LineByLineReader = require('line-by-line');
 const fs = require('fs');
 const  path = require('path');
 const Fuse = require('fuse.js');
-const wikipediaDic = require('./constants').wikipediaDic;
+const wikipediaDic = require('./wikipedia_dic').wikipediaDic;
 
 const args = require('yargs')
   .usage('WIKIPEDIA STEP: Pass a city name and the flag --keepUnknown in case you want to keep the unclassified streets. ')
