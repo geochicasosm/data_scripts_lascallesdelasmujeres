@@ -37,7 +37,7 @@ async function getBoundary(id) {
   });
 }
 
-function getOverPassData(squareBBOX, index, city, generatePartialGridFile = false) {
+function getOverPassData(squareBBOX, index, city, language, generatePartialGridFile = false) {
   return new Promise((resolve, reject) => {
     const query = `
       way(${squareBBOX.minLat},${squareBBOX.minLng},${squareBBOX.maxLat},${squareBBOX.maxLng})
@@ -58,7 +58,7 @@ function getOverPassData(squareBBOX, index, city, generatePartialGridFile = fals
               {
                 ...feature,
                 properties: {
-                  name: feature.properties.tags.name,
+                  name: feature.properties.tags[`name:${language}`] || feature.properties.tags.name,
                   id: feature.properties.id,
                   wikipedia_link: '',
                   gender: 'unknown',
@@ -99,14 +99,14 @@ async function getGrid(bboxCity, splitFactor = 1) {
   return grid;
 }
 
-async function getStreetsByBBOX(bboxCity, city = 'city') {
+async function getStreetsByBBOX(bboxCity, city = 'city', language = 'es') {
   const grid = await getGrid(bboxCity);
 
   let index = 0;
   const features = [];
   for (const square of grid) {
     console.log(`Sending request number ${index}`);
-    const overpassResults = await getOverPassData(square, index, city);
+    const overpassResults = await getOverPassData(square, index, city, language);
     console.log(`result ${index}: ${overpassResults.length} features`);
     index++;
     features.push(...overpassResults);
@@ -117,7 +117,7 @@ async function getStreetsByBBOX(bboxCity, city = 'city') {
   return features;
 }
 
-const processCity = async function (city, relationId) {
+const processCity = async function (city, relationId, language) {
   try {
     const cityBoundaries = flatten(await getBoundary(relationId)).features;
     const cityFilePath = path.join(process.cwd(), 'data', city, city + '_boundary.geojson');
@@ -127,7 +127,7 @@ const processCity = async function (city, relationId) {
       type: 'FeatureCollection',
       features: cityBoundaries,
     });
-    const features = await getStreetsByBBOX(cityBBOX, city);
+    const features = await getStreetsByBBOX(cityBBOX, city, language);
     console.log(`${features.length} features on your GeoJSON file`);
 
     // Find if a feature intersects with any of the city boundaries
