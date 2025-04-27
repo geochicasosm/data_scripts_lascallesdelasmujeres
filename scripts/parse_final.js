@@ -116,7 +116,7 @@ function readGeojson() {
             tratadosList.add(geojson.features[key].properties.name);
 
             if (
-              objValues.url !== ('' && null && undefined) &&
+              objValues.url !== ('' && null && undefined) && /* eslint-disable-line no-constant-binary-expression */ 
               objValues.gender.toLowerCase() === FEMALE
             ) {
               stats.numLink++;
