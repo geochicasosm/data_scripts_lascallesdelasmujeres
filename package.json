@@ -7,7 +7,7 @@
     "initial-step": "node ./scripts/index",
     "wikipedia-step": "node ./scripts/apply_wikipedia.js",
     "final-step": "node ./scripts/parse_final.js",
-    "lint": "eslint --fix  scripts/**"
+    "lint": "eslint --fix  scripts/** --no-warn-ignored"
   },
   "author": "Jessica Sena",
   "license": "MIT",
