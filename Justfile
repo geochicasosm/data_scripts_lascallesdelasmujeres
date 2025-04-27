@@ -12,3 +12,8 @@ download_data target relationID: (create_dir target)
 wikipedia target relationID: (download_data target relationID)
     @echo "Getting wikipedia details for {{target}}"
     npm run wikipedia-step -- --city={{target}} --keepUnknown
+
+# Finish the process
+process target relationID: (wikipedia target relationID)
+    @echo "Finishing the processing of {{target}}"
+    npm run final-step -- --city={{ target }}
