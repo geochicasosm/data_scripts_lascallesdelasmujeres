@@ -140,7 +140,7 @@ $ just process aldaia 340328
 ...
 ```
 
-Y una vez los datos están listos, se puede llamar al paso `postprocess` para acabar el processo
+Y una vez los datos están listos, se puede llamar al paso `postprocess` para acabar el proceso
 
 ```bash
 just postprocess aldaia       
