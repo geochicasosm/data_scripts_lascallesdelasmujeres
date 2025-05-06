@@ -23,7 +23,7 @@
     "line-by-line": "^0.1.6",
     "query-overpass": "^1.5.5",
     "split": "^1.0.0",
-    "yargs": "^11.0.0"
+    "yargs": "^11.1.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
