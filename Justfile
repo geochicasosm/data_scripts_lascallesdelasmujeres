@@ -13,7 +13,7 @@ download_data city relationID: (create_dir city)
 wikipedia city:
     @echo "📚 Getting wikipedia details for {{ city }}"
     npm run wikipedia-step -- --city={{ city }} --keepUnknown
-    @echo "CSV is ready for manual review 👀 at data/{{ city }}/list_genderdize_wikipedia.csv 🎉"
+    @echo "CSV is ready for manual review 👀 at data/{{ city }}/list_genderize_wikipedia.csv 🎉"
 
 # Run download_data and wikipedia recipe
 process city relationID: (download_data city relationID) (wikipedia city)
