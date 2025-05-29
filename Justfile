@@ -17,10 +17,12 @@ wikipedia city:
 
 # Run download_data and wikipedia recipe
 process city relationID: (download_data city relationID) (wikipedia city)
+    @echo "📦 Compressing the data for {{ city }} to send it to the volunteers"
+    tar czf data/{{ city }}.for_review.tar.gz data/{{ city }}
 
 # Finish the process
 postprocess city:
     @echo "⚙ Finishing the processing of {{ city }}"
     npm run final-step -- --city={{ city }}
-    tar czf data/{{ city }}.tar.gz data/{{ city }}
+    tar czf data/{{ city }}.for_publishing.tar.gz data/{{ city }}
     @echo "File ready for submission.\n\n👉 data/{{ city }}.tar.gz 👈\n\n 🌈 Thanks!! 🌈"
