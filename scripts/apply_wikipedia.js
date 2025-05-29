@@ -108,17 +108,20 @@ function initReadFile(stream){
 
 }
 
+// https://www.fusejs.io/api/options.html#includematches
 var options = {
+    // Basic options
     id: 'sitelink',
+    ignoreDiacritics: true,
     shouldSort: true,
-    threshold: 0.6,
-    location: 30,
-    distance: 100,
-    maxPatternLength: 32,
-    minMatchCharLength: 1,
+    minMatchCharLength: 3,
     keys: [
       'itemLabel'
-    ]
+    ],
+    // Fuzzy matching options 
+    location: 0,
+    threshold: 0.6,
+    distance: 100,
   };
 const myfuse = new Fuse(wikipediaDic, options);
 
