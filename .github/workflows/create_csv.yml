@@ -28,7 +28,10 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v3
 
-      - name: Print the input tag to STDOUT
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Process City
         run: just process ${{ inputs.city }} ${{ inputs.osm_id }}
 
       - name: Upload Processed City
