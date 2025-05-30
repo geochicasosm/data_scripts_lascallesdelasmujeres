@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
 
 const overpass = require('query-overpass');
 const booleanContains = require('@turf/boolean-contains').default;

@@ -29,7 +29,7 @@ npm install
 
 # Instrucciones
 
-### _Paso 1_
+### _Paso 1_: identificar la ciudad y su relación en OSM
 
 Buscar [AQUÍ](https://www.openstreetmap.org/relation/11) el ID de OSM de la ciudad a tratar.
 
@@ -41,7 +41,7 @@ Crear una carpeta dentro de la carpeta "data" del proyecto, con el nombre de la 
 
 **buenosaires**
 
-### _Paso 2_
+### _Paso 2_: Descargar datos
 
 Ejecutar:
 
@@ -57,7 +57,7 @@ Se generan los ficheros:
 - list.csv
 - list_genderize.csv
 
-### _Paso 3_
+### _Paso 3_: Eliminar calles sin género y buscar enlaces en Wikipedia
 
 Aplicar el script que elimina las calles clasificadas como "unknown" (ni de mujer, ni de hombre) y búsqueda de los articulos de Wikipedia para las calles con nombre de mujer:
 
@@ -69,7 +69,8 @@ _\*Para deshabilitar el descarte automático de calles "Unknown" usar el flag `-
 
 Se genera el fichero 'list_genderize_wikipedia.csv'.
 
-### _Paso 5_
+
+### _Paso 4_: Revisión manual
 
 Revisar manualmente el fichero anterior:
 
@@ -100,7 +101,7 @@ Guardar el fichero corregido en la misma carpeta del proyecto, con el nombre:
 
 _ATENCIÓN_: Es muy importante que el separador de campos utilizado en el CSV sea el ";", en caso contrario no funcionará.
 
-### _Paso 6_
+### _Paso 5_
 
 Ejecutar:
 
@@ -113,6 +114,49 @@ Se generan tres ficheros:
 - **final_tile.geojson** Fichero final que se cargará en el mapa
 - **stats.txt** fichero con estadísticas de los datos
 - **noLinkList.txt** Fichero con el listado de calles sin artículo en wikipedia
+
+
+### `just` para ejecutar los scripts
+
+Teniendo [just](https://github.com/casey/just) instalado se pueden ejecutar estos pasos de forma más sencilla:
+
+```bash
+#Lista los diferentes pasos
+$ just -l
+just -l                       
+Available recipes:
+    create_dir city               # Creates the data directory
+    download_data city relationID # Downloads the city data from the Overpass API (creating the directory first)
+    postprocess city              # Finish the process
+    process city relationID       # Run download_data and wikipedia recipe
+    wikipedia city                # Enriches the CSV with wikipedia details
+---
+```
+
+El paso `process` llama automáticamente a los pasos `download_data` y `wikipedia`
+
+```bash
+$ just process aldaia 340328
+...
+```
+
+Y una vez los datos están listos, se puede llamar al paso `postprocess` para acabar el proceso
+
+```bash
+just postprocess aldaia       
+⚙ Finishing the processing of aldaia
+npm run final-step -- --city=aldaia
+
+> lascallesdelasmujeres_data_scripts@1.0.0 final-step
+> node ./scripts/parse_final.js --city=aldaia
+
+tar czf data/aldaia.tar.gz data/aldaia
+File ready for submission.
+
+👉 data/aldaia.tar.gz 👈
+
+ 🌈 Thanks!! 🌈
+```
 
 ## Para acabar
 

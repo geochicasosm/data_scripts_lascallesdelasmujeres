@@ -80,11 +80,11 @@ function initReadFile(stream){
             streetMap.add(splitLine[COL_FULL_NAME]);
 
             const result = myfuse.search(`${splitLine[COL_CLEAN_NAME]}`);
-            const url = (result.length > 0 ? result[COL_FULL_NAME] : '');
-
+            const url = result.length > 0  && result[0]?.item?.sitelink 
+                ? result[0].item.sitelink 
+                : '';
             stream.write(`${line};${url}`);
             stream.write('\n');
-                    
             lr.resume(); 
 
     
@@ -108,17 +108,20 @@ function initReadFile(stream){
 
 }
 
+// https://www.fusejs.io/api/options.html#includematches
 var options = {
+    // Basic options
     id: 'sitelink',
+    ignoreDiacritics: true,
     shouldSort: true,
-    threshold: 0.6,
-    location: 0,
-    distance: 100,
-    maxPatternLength: 32,
-    minMatchCharLength: 1,
+    minMatchCharLength: 3,
     keys: [
       'itemLabel'
-    ]
+    ],
+    // Fuzzy matching options 
+    location: 0,
+    threshold: 0.6,
+    distance: 100,
   };
 const myfuse = new Fuse(wikipediaDic, options);
 
