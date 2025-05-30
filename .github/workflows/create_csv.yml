@@ -1,0 +1,36 @@
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        description: 'City Name. For example: aldaia'
+        type: string
+        required: true
+      osm_id:
+        description: 'OSM city relation ID. For example go to https://www.openstreetmap.org/relation/340328 (Aldaia)'
+        type: string
+        required: true
+
+jobs:
+  generateCsv:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.print_tags }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Setup Just
+        uses: extractions/setup-just@v3
+
+      - name: Print the input tag to STDOUT
+        run: just process ${{ inputs.city }} ${{ inputs.osm_id }}
+
+      - name: Upload Processed City
+        uses: actions/upload-artifact@v4
+        with:
+          path: data/{{ inputs.city }}.for_review.tar.gz
