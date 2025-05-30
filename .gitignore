@@ -1,6 +1,6 @@
 node_modules
 data
-wikipedia
+wikipedia/*.csv
 old_scripts
 parse_final_custombcn.js
 .vscode
