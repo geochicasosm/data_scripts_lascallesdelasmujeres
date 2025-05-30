@@ -1,3 +1,5 @@
+name: 'Generate csv file for city and relation'
+
 on:
   workflow_dispatch:
     inputs:
