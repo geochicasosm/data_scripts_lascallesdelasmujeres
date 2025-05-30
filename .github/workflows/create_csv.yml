@@ -12,6 +12,8 @@ on:
         type: string
         required: true
 
+run-name: 'Process ${{ inputs.city }}'
+
 jobs:
   generateCsv:
     runs-on: ubuntu-latest
@@ -37,4 +39,4 @@ jobs:
       - name: Upload Processed City
         uses: actions/upload-artifact@v4
         with:
-          path: data/{{ inputs.city }}.for_review.tar.gz
+          path: data/${{ inputs.city }}.for_review.tar.gz
