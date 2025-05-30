@@ -1,4 +1,4 @@
-name: 'Generate csv file for ${{ inputs.city }} and relation'
+name: 'Generate csv file for city and relation'
 
 on:
   workflow_dispatch:
