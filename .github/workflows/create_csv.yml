@@ -1,4 +1,4 @@
-name: 'Generate csv file for city and relation'
+name: 'Generate csv file for ${{ inputs.city }} and relation'
 
 on:
   workflow_dispatch:
@@ -15,7 +15,6 @@ on:
 jobs:
   generateCsv:
     runs-on: ubuntu-latest
-    if: ${{ inputs.print_tags }}
     steps:
       - uses: actions/checkout@v4
 
