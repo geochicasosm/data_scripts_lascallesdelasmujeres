@@ -26,3 +26,15 @@ postprocess city:
     npm run final-step -- --city={{ city }}
     tar czf data/{{ city }}.for_publishing.tar.gz data/{{ city }}
     @echo "File ready for submission.\n\n👉 data/{{ city }}.tar.gz 👈\n\n 🌈 Thanks!! 🌈"
+
+# Download wikipedia data using wikidata endpoint
+download_wikidata:
+    @echo "📥 Downloading the Wikipedia API data"
+    export DOWNLOAD_DESTINATION=wikipedia/wikipedia.csv && ./wikipedia/download.sh
+    @echo "Wikipedia API data downloaded 🎉"
+
+# Download wikipedia data from Geoinquietos daily dump
+download_wikidata_geoinquietos:
+    @echo "📥 Downloading the Wikipedia data from daily Geoinquietos dump"
+    curl https://recursos.geoinquietos.org/calles/mujeres.csv > wikipedia/wikipedia.csv                                                                      
+    @echo "Geoinquietos Wikipedia data downloaded 🎉"
