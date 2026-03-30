@@ -53,11 +53,30 @@ function startProcess(){
 function initReadFile(stream){
 
     console.log('init read file list_genderize.csv-');
+    
+    const inputFilePath = path.join(__dirname, `../data/${folder}/list_genderize.csv`);
+    
+    // Check if the input file exists
+    if (!fs.existsSync(inputFilePath)) {
+        const error = new Error(`Input file not found: ${inputFilePath}. Make sure the initial data processing step completed successfully.`);
+        console.error('ERROR:', error.message);
+        throw error;
+    }
+    
+    // Check if the file has content (more than just headers)
+    const stats = fs.statSync(inputFilePath);
+    if (stats.size < 100) { // Arbitrary threshold - a file with just headers would be very small
+        const error = new Error(`Input file appears to be empty or contains only headers: ${inputFilePath}. This suggests the data extraction step failed.`);
+        console.error('ERROR:', error.message);
+        throw error;
+    }
+    
+    console.log(`Input file validated: ${inputFilePath} (${stats.size} bytes)`);
 
-    const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/list_genderize.csv`), { encoding: 'utf8', skipEmptyLines: true });
+    const lr = new LineByLineReader(inputFilePath, { encoding: 'utf8', skipEmptyLines: true });
 
     lr.on('error', function (err) {
-        console.log(err);
+        console.log('LineByLineReader error:', err);
         throw err;
     });
     
@@ -88,7 +107,7 @@ function initReadFile(stream){
             lr.resume(); 
 
     
-        }if(keepUnknown && !streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === UNKNOWN){ //Female case
+        } else if(keepUnknown && !streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === UNKNOWN){
             
             stream.write(line);
             stream.write('\n');

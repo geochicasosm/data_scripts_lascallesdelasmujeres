@@ -37,6 +37,29 @@ function applyGender(folder, currentLangs = ['es']) {
   const INDEX_FULL_NAME = 0;
   const INDEX_CLEAN_NAME = 1;
 
+  // Check if genderize processing is already completed
+  function checkGenderizeCache() {
+    const listFile = path.join(__dirname, `../data/${folder}/list.csv`);
+    const genderizeFile = path.join(__dirname, `../data/${folder}/list_genderize.csv`);
+    
+    try {
+      const listStats = fs.statSync(listFile);
+      const genderizeStats = fs.statSync(genderizeFile);
+      
+      // Check if genderize file exists and is newer than list file
+      if (genderizeStats.size > 200 && genderizeStats.mtime > listStats.mtime) {
+        console.log(`📋 Found existing genderize data: ${genderizeFile}`);
+        console.log(`   File size: ${genderizeStats.size} bytes`);
+        console.log(`   Modified: ${genderizeStats.mtime.toISOString()}`);
+        return true;
+      }
+    } catch {
+      return false;
+    }
+    
+    return false;
+  }
+
   function initDictionaryObjects() {
     initWomenDic();
   }
@@ -240,6 +263,14 @@ function applyGender(folder, currentLangs = ['es']) {
     });
   }
 
+  // Check cache first
+  if (checkGenderizeCache()) {
+    console.log('✅ Gender classification already completed, skipping expensive API calls');
+    console.log('💡 Delete list_genderize.csv if you want to re-run gender classification');
+    return Promise.resolve();
+  }
+  
+  console.log('🔄 Starting gender classification process...');
   prepareListCSV();
 }
 

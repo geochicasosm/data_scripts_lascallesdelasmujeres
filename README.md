@@ -4,6 +4,79 @@ Read this in ENGLISH here: [README.en.md](https://github.com/geochicasosm/data_s
 
 Visita la web del proyecto: [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) ( Versión beta ) de [GEOCHICAS](https://geochicas.org/)
 
+## Flujo del proceso de datos
+
+```mermaid
+flowchart TD
+    A[🔍 Identificar Ciudad y Relación OSM] --> B[📁 just create_dir ciudad]
+    B --> C[🌏 just download_data ciudad relationID]
+    
+    C --> D{📥 Descargar límites\nde la ciudad}
+    D -->|HTTP 504/429| D1[⚠️ Error API]
+    D1 --> D2[🔄 Reintentar con\nexponential backoff]
+    D2 --> D
+    D -->|✅ Éxito| E[📊 Dividir en grillas\npara procesamiento]
+    
+    E --> F{🛣️ Descargar calles\npor grilla}
+    F -->|Rate limit| F1[⏱️ Esperar 30s-120s]
+    F1 --> F
+    F -->|Error de red| F2[🔄 Reintentar 3 veces]
+    F2 --> F
+    F -->|✅ Éxito| G[🏷️ Clasificar géneros\ncon API genderize]
+    
+    G --> H[📄 Generar archivos]
+    H --> H1[🗺️ boundary.geojson]
+    H --> H2[🛣️ streets.geojson]
+    H --> H3[📋 list.csv]
+    H --> H4[👫 list_genderize.csv]
+    
+    H4 --> I{✅ Validar archivos\ngenerados}
+    I -->|❌ Archivo faltante| I1[⚠️ Error: Pipeline falló]
+    I -->|✅ Archivos OK| J[📚 just wikipedia ciudad]
+    
+    J --> K{📖 Procesar Wikipedia}
+    K -->|❌ Archivo no existe| K1[⚠️ Error: Ejecutar download_data primero]
+    K -->|✅ Archivo válido| L[🔍 Buscar artículos\nWikipedia para mujeres]
+    L --> M[📄 list_genderize_wikipedia.csv]
+    
+    M --> N[👤 REVISIÓN MANUAL]
+    N --> N1[❌ Eliminar calles no-persona<br/>✏️ Corregir clasificación género<br/>🔗 Añadir/corregir enlaces Wikipedia]
+    N1 --> O[💾 Guardar como ciudad_finalCSV.csv]
+    
+    O --> P[⚙️ just postprocess ciudad]
+    P --> Q{📊 Procesar datos finales}
+    Q -->|❌ CSV manual no existe| Q1[⚠️ Error: Completar revisión manual]
+    Q -->|✅ CSV válido| R[📈 Generar estadísticas]
+    
+    R --> S[📄 Archivos finales]
+    S --> S1[🎯 final_tile.geojson]
+    S --> S2[📊 stats.txt]
+    S --> S3[📝 noLinkList.txt]
+    S --> S4[📦 ciudad.for_publishing.tar.gz]
+    
+    S4 --> T[🎉 ¡Listo para envío!]
+    
+    %% Estilos
+    classDef manual fill:#ffe6cc,stroke:#ff9900,stroke-width:2px
+    classDef automated fill:#e6f3ff,stroke:#0066cc,stroke-width:2px
+    classDef error fill:#ffe6e6,stroke:#cc0000,stroke-width:2px
+    classDef success fill:#e6ffe6,stroke:#009900,stroke-width:2px
+    classDef file fill:#f0f0f0,stroke:#666666,stroke-width:1px
+    
+    class A,N,N1,O manual
+    class B,C,D,E,F,G,H,J,K,L,P,Q,R automated
+    class D1,F1,F2,I1,K1,Q1 error
+    class T success
+    class H1,H2,H3,H4,M,S1,S2,S3,S4 file
+```
+
+### Comandos principales
+
+- **Proceso completo automatizado**: `just process ciudad relationID`
+- **Solo descarga**: `just download_data ciudad relationID`  
+- **Solo Wikipedia**: `just wikipedia ciudad`
+- **Finalizar**: `just postprocess ciudad`
+
 ## Getting Started
 
 Los datos que se visualizan en el proyecto [#LasCallesDeLasMujeres](https://geochicasosm.github.io/lascallesdelasmujeres/) se generan ejecutando los scripts contenidos en este proyecto. A continuación se detallan las instrucciones para reproducir el proceso y poder generar datos para cualquier ciudad.
