@@ -13,8 +13,8 @@ const OVERPASS_SERVERS = [
     description: 'Z-Level Overpass server (lighter load)'
   },
   {
-    name: 'LYR Overpass',
-    url: 'https://lz4.overpass-api.de/api/interpreter', 
+    name: 'LZ4 Overpass',
+    url: 'https://lz4.overpass-api.de/api/interpreter',
     description: 'LZ4 compressed Overpass server'
   }
 ];

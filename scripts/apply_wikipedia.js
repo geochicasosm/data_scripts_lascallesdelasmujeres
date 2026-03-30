@@ -38,7 +38,7 @@ function startProcess(){
     console.log('Starting wikipedia link search process...');
 
     try {
-        const filtered_stream = fs.createWriteStream(path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`), {'flags': 'a'});
+        const filtered_stream = fs.createWriteStream(path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`), {'flags': 'w'});
         filtered_stream.once('open', function() {
             filtered_stream.write('calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia');
             filtered_stream.write('\n');

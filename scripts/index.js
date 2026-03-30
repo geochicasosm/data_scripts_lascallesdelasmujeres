@@ -14,7 +14,7 @@ const args = require('yargs')
 .describe('c', 'City in your data folder')
 .describe('r', 'OSM relation ID for that city')
 .describe('lang', 'main language of the streets names')
-.describe('s', 'Overpass server: 0=main, 1=mail.ru, 2=kumi (or set OVERPASS_URL env var)')
+.describe('s', 'Overpass server: 0=main, 1=z-level, 2=lz4 (or set OVERPASS_URL env var)')
 .demandOption(['c', 'r']).argv;
 
 function printArgs() {

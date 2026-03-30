@@ -19,7 +19,7 @@ console.log('');
 console.log('  # Use Z-Level server (1)');
 console.log('  npm run initial-step -- --city=madrid --relation=347950 --server=1');
 console.log('');
-console.log('  # Use LYR server (2)');
+console.log('  # Use LZ4 server (2)');
 console.log('  npm run initial-step -- --city=madrid --relation=347950 --server=2');
 console.log('');
 console.log('  # Use custom server via environment variable');
