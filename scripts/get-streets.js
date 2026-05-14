@@ -574,7 +574,13 @@ const processCity = async function (city, relationId, language) {
       // Find if a feature intersects with any of the city boundaries
       console.log('🎯 Filtering streets within city boundaries...');
       filteredFeatures = features.filter((feature) => {
+        const featureBbox = bbox(feature);
         return optimizedBoundaries.features.find((boundary) => {
+          const boundaryBbox = bbox(boundary);
+          if (featureBbox[0] > boundaryBbox[2] || featureBbox[2] < boundaryBbox[0] ||
+              featureBbox[1] > boundaryBbox[3] || featureBbox[3] < boundaryBbox[1]) {
+            return false;
+          }
           try {
             return booleanContains(boundary, feature);
           } catch {
