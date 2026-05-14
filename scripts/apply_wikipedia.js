@@ -81,43 +81,31 @@ function initReadFile(stream){
     });
     
     lr.on('line', function (line) {
-
         lr.pause();
-    
-        var splitLine = line.split(';');
-    
-        //Male case
-        if(!streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === MALE){
-    
-            stream.write(line);
-            stream.write('\n');
-            streetMap.add(splitLine[COL_FULL_NAME]);
+
+        const splitLine = line.split(';');
+
+        if (streetMap.has(splitLine[COL_FULL_NAME])) {
             lr.resume();
-    
-        }else if(!streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === FEMALE){ //Female case
-
-            streetMap.add(splitLine[COL_FULL_NAME]);
-
-            const result = myfuse.search(`${splitLine[COL_CLEAN_NAME]}`);
-            const url = result.length > 0  && result[0]?.item?.sitelink 
-                ? result[0].item.sitelink 
-                : '';
-            stream.write(`${line};${url}`);
-            stream.write('\n');
-            lr.resume(); 
-
-    
-        } else if(keepUnknown && !streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === UNKNOWN){
-            
-            stream.write(line);
-            stream.write('\n');
-            streetMap.add(splitLine[COL_FULL_NAME]);
-            lr.resume();
-
-        } else{
-            lr.resume();
+            return;
         }
-            
+
+        const gender = splitLine[COL_GENDER].toLowerCase();
+        streetMap.add(splitLine[COL_FULL_NAME]);
+
+        if (gender === MALE) {
+            stream.write(line + '\n');
+        } else if (gender === FEMALE) {
+            const result = myfuse.search(splitLine[COL_CLEAN_NAME]);
+            const url = result.length > 0 && result[0]?.item?.sitelink
+                ? result[0].item.sitelink
+                : '';
+            stream.write(`${line};${url}\n`);
+        } else if (keepUnknown && gender === UNKNOWN) {
+            stream.write(line + '\n');
+        }
+
+        lr.resume();
     });
     
     lr.on('end', function () {

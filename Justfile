@@ -43,9 +43,9 @@ cache_status city:
 # Downloads the city data from the Overpass API (creating the directory first)
 # The script uses internal caching: existing boundary/streets/grid files are reused automatically.
 # To force a full re-download, run: just clear_cache city
-download_data city relationID: (create_dir city)
+download_data city relationID language='es': (create_dir city)
     @echo "🌏 Downloading data for {{ city }} and relation {{relationID}}"
-    npm run initial-step -- --city={{ city }} --relation={{ relationID }}
+    npm run initial-step -- --city={{ city }} --relation={{ relationID }} --language={{ language }}
     @if [ ! -f "data/{{ city }}/list_genderize.csv" ]; then \
         echo "❌ ERROR: Data download failed - list_genderize.csv not created"; \
         exit 1; \
@@ -64,7 +64,7 @@ wikipedia city:
     @echo "CSV is ready for manual review 👀 at data/{{ city }}/list_genderize_wikipedia.csv 🎉"
 
 # Run download_data and wikipedia recipe
-process city relationID: (download_data city relationID) (wikipedia city)
+process city relationID language='es': (download_data city relationID language) (wikipedia city)
     @echo "📦 Compressing the data for {{ city }} to send it to the volunteers"
     tar czf data/{{ city }}.for_review.tar.gz data/{{ city }}
 

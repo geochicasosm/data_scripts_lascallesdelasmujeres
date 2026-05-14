@@ -22,7 +22,7 @@ flowchart TD
     F1 --> F
     F -->|Error de red| F2[🔄 Reintentar 3 veces]
     F2 --> F
-    F -->|✅ Éxito| G[🏷️ Clasificar géneros\ncon API genderize]
+    F -->|✅ Éxito| G[🏷️ Clasificar géneros\ncon diccionario local]
     
     G --> H[📄 Generar archivos]
     H --> H1[🗺️ boundary.geojson]

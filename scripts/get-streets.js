@@ -588,6 +588,7 @@ const processCity = async function (city, relationId, language) {
       const filteredFeaturesPath = cache.files.streets;
       console.log(`💾 Writing streets result to: ${filteredFeaturesPath}`);
       writeFeatures(filteredFeaturesPath, filteredFeatures);
+      clearGridCache(city);
     }
     
     // Update cache status after processing

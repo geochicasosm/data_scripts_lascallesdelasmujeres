@@ -13,22 +13,10 @@ improvements that were identified but not yet addressed.
 
 ---
 
-## 1. Justfile: expose `--language` parameter
+## 1. ~~Justfile: expose `--language` parameter~~ ✅ DONE (2026-05-14)
 
-**Problem:** The Justfile `download_data` and `process` recipes only accept
-`city` and `relationID`. Non-Spanish cities must drop down to `npm run` directly,
-bypassing all the Justfile convenience.
-
-**Fix:** Add an optional `language` parameter with a default value:
-
-```just
-download_data city relationID language='es': (create_dir city)
-    npm run initial-step -- --city={{ city }} --relation={{ relationID }} --language={{ language }}
-```
-
-Apply the same pattern to `process`.
-
-**Effort:** Small (< 5 minutes).
+`download_data` and `process` now accept an optional `language='es'` parameter.
+Usage: `just process city relationID fr`
 
 ---
 
@@ -79,53 +67,15 @@ speedup for large cities.
 
 ---
 
-## 4. Grid cache files not cleaned up after success
+## 4. ~~Grid cache files not cleaned up after success~~ ✅ DONE (2026-05-14)
 
-**Problem:** After `processCity` successfully writes `city_streets.geojson`,
-the intermediate `grid_*.geojson` files remain on disk. These are only useful
-for resuming interrupted downloads.
-
-**File:** `scripts/get-streets.js`, end of `processCity`.
-
-**Fix:** Add cleanup after the streets file is written:
-
-```javascript
-if (!cache.streets) {
-  // ... existing filtering and writing code ...
-  writeFeatures(filteredFeaturesPath, filteredFeatures);
-
-  // Clean up intermediate grid files
-  clearGridCache(city);
-}
-```
-
-The `clearGridCache` function already exists and is exported. Just call it at
-the right point. Consider adding a `--keep-grid-cache` flag if users want to
-preserve them for debugging.
-
-**Effort:** Small (< 5 minutes).
+`clearGridCache(city)` now called immediately after `writeFeatures` in `processCity`.
 
 ---
 
-## 5. README flowchart inaccuracy
+## 5. ~~README flowchart inaccuracy~~ ✅ DONE (2026-05-14)
 
-**Problem:** The Mermaid flowchart step G says "Clasificar géneros con API
-genderize" but the code uses local dictionary matching against
-`namesDB/list_mujeres.csv` and `namesDB/list_hombres.csv`. There is no external
-API call to genderize.io.
-
-**File:** `README.md`, the Mermaid flowchart section.
-
-**Fix:** Change the node text from:
-```
-G[🏷️ Clasificar géneros\ncon API genderize]
-```
-to:
-```
-G[🏷️ Clasificar géneros\ncon diccionario local]
-```
-
-**Effort:** Trivial (< 2 minutes).
+Mermaid node G updated: `con API genderize` → `con diccionario local`.
 
 ---
 
@@ -173,48 +123,10 @@ polygons are common.
 
 ---
 
-## 10. Error handling in `apply_wikipedia.js` line flow
+## 10. ~~Error handling in `apply_wikipedia.js` line flow~~ ✅ DONE (2026-05-14)
 
-**Problem:** In `initReadFile`, the line handler has a logic issue inherited from
-the original code. The male and female cases use `else if`, but the unknown case
-was a bare `if` (fixed to `else if` in the recent review). However, the `else`
-at the end (`lr.resume()`) only pairs with the unknown case, not the male/female
-cases. This means if a line doesn't match any condition (e.g., already in
-`streetMap`), `lr.resume()` is called from the `else` branch, which is correct
-but fragile.
-
-A cleaner approach would restructure the handler:
-
-```javascript
-lr.on('line', function (line) {
-  lr.pause();
-  const splitLine = line.split(';');
-
-  if (streetMap.has(splitLine[COL_FULL_NAME])) {
-    lr.resume();
-    return;
-  }
-
-  const gender = splitLine[COL_GENDER].toLowerCase();
-  streetMap.add(splitLine[COL_FULL_NAME]);
-
-  if (gender === MALE) {
-    stream.write(line + '\n');
-  } else if (gender === FEMALE) {
-    const result = myfuse.search(splitLine[COL_CLEAN_NAME]);
-    const url = result.length > 0 && result[0]?.item?.sitelink
-      ? result[0].item.sitelink
-      : '';
-    stream.write(line + ';' + url + '\n');
-  } else if (keepUnknown && gender === UNKNOWN) {
-    stream.write(line + '\n');
-  }
-
-  lr.resume();
-});
-```
-
-**Effort:** Small (~15 minutes).
+`initReadFile` line handler restructured: early-return on duplicate, single
+`lr.resume()` at end, `streetMap.add` before branching so all paths are handled.
 
 ---
 
@@ -244,10 +156,6 @@ Inter-request delays also reduced: 15s→10s (large grid), 10s→5s (small grid)
 
 Based on impact and effort:
 
-1. **#5 (README fix)** — Trivial fix, improves accuracy.
-2. **#1 (Justfile language)** — Small fix, improves usability.
-3. **#4 (Grid cleanup)** — Small fix, saves disk space.
-4. **#10 (Wikipedia handler)** — Small effort, improves correctness.
-5. **#3 (bbox pre-filter)** — Medium effort, big perf win for large cities.
-6. **#7 (Modernize apply_wikipedia)** — Nice-to-have cleanup.
-7. **#9 (rbush)** — Only if large cities are a bottleneck.
+1. **#3 (bbox pre-filter)** — Medium effort, big perf win for large cities.
+2. **#7 (Modernize apply_wikipedia)** — Nice-to-have cleanup.
+3. **#9 (rbush)** — Only if large cities are a bottleneck.
