@@ -37,210 +37,185 @@ function applyGender(folder, currentLangs = ['es']) {
   const INDEX_FULL_NAME = 0;
   const INDEX_CLEAN_NAME = 1;
 
-  function initDictionaryObjects() {
-    initWomenDic();
+  function checkGenderizeCache() {
+    const listFile = path.join(__dirname, `../data/${folder}/list.csv`);
+    const genderizeFile = path.join(__dirname, `../data/${folder}/list_genderize.csv`);
+
+    try {
+      const listStats = fs.statSync(listFile);
+      const genderizeStats = fs.statSync(genderizeFile);
+
+      if (genderizeStats.size > 200 && genderizeStats.mtime > listStats.mtime) {
+        console.log(`📋 Found existing genderize data: ${genderizeFile}`);
+        console.log(`   File size: ${genderizeStats.size} bytes`);
+        console.log(`   Modified: ${genderizeStats.mtime.toISOString()}`);
+        return true;
+      }
+    } catch {
+      return false;
+    }
+
+    return false;
   }
 
-  function initWomenDic() {
-    const lr = new LineByLineReader(path.join(__dirname, '../namesDB/list_mujeres.csv'), {
-      encoding: 'utf8',
-      skipEmptyLines: true,
-    });
-
-    lr.on('error', function (err) {
-      console.log(err);
-      throw err;
-    });
-
-    lr.on('line', function (line) {
-      lr.pause();
-      womenDic.add(line);
-      lr.resume();
-    });
-
-    lr.on('end', function () {
-      initMenDic();
-      console.log('Diccionario de nombres de mujer init: OK');
-    });
+  if (checkGenderizeCache()) {
+    console.log('✅ Gender classification already completed, skipping');
+    console.log('💡 Delete list_genderize.csv if you want to re-run gender classification');
+    return Promise.resolve();
   }
 
-  function initMenDic() {
-    const lr = new LineByLineReader(path.join(__dirname, '../namesDB/list_hombres.csv'), {
-      encoding: 'utf8',
-      skipEmptyLines: true,
-    });
+  console.log('🔄 Starting gender classification process...');
 
-    lr.on('error', function (err) {
-      console.log(err);
-      throw err;
-    });
-
-    lr.on('line', function (line) {
-      lr.pause();
-      menDic.add(line);
-      lr.resume();
-    });
-
-    lr.on('end', function () {
-      console.log('Diccionario de nombres de hombre init: OK');
-      startProcess();
-    });
-  }
-
-  function startProcess() {
-    console.log('Starting process...');
-    new Promise((resolve, reject) => {
-      try {
-        const gender_stream2 = fs.createWriteStream(
-          path.join(__dirname, `../data/${folder}/list_genderize.csv`),
-          {
-            flags: 'a',
-          }
-        );
-        gender_stream2.once('open', async function () {
-          await initReadFile(gender_stream2);
-          resolve();
+  // Return a Promise that resolves when the entire callback chain completes
+  return new Promise((resolve, reject) => {
+    function loadDictionary(filePath, targetSet) {
+      return new Promise((res, rej) => {
+        const lr = new LineByLineReader(filePath, {
+          encoding: 'utf8',
+          skipEmptyLines: true,
         });
-      } catch (err) {
-        console.error(err);
-        reject(err);
-      }
-    });
-  }
-
-  async function initReadFile(stream) {
-    console.log('Procesando listado de calles....');
-
-    const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/list.csv`), {
-      encoding: 'utf8',
-      skipEmptyLines: true,
-    });
-
-    lr.on('error', function (err) {
-      console.log(err);
-      throw err;
-    });
-
-    lr.on('line', function (line) {
-      lr.pause();
-
-      const splitLine = line.split(';');
-
-      const name_surname = splitLine[INDEX_CLEAN_NAME].split(' ');
-
-      const name = name_surname[0];
-      const surname = name_surname.length > 1 ? name_surname[1] : '';
-
-      let isWoman = false;
-      let isMan = false;
-
-      for (let word of name_surname) {
-        const w = prepareWord(word);
-
-        if (womenDic.has(w.toUpperCase())) {
-          isWoman = true;
-          break;
-        } else if (menDic.has(w.toUpperCase())) {
-          isMan = true;
-          break;
-        }
-      }
-
-      if (isWoman) {
-        stream.write(
-          `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};2;Female;-;-`
-        );
-        stream.write('\n');
-        numFindWomen++;
-        lr.resume();
-      } else if (isMan) {
-        stream.write(
-          `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};-2;Male;-;-`
-        );
-        stream.write('\n');
-        numFindMen++;
-        lr.resume();
-      } else {
-        stream.write(
-          `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};0;Unknown;-;-`
-        );
-        stream.write('\n');
-        numUnknown++;
-        lr.resume();
-      }
-    });
-
-    lr.on('end', function () {
-      stream.end();
-      console.log('--------------');
-      console.log('Calles sin nombre: ', numNoName);
-      console.log('Nombres de mujer encontrados en el diccionario: ', numFindWomen);
-      console.log('Nombres de hombre encontrados en el diccionario: ', numFindMen);
-      console.log('Nombre desconocidos: ', numUnknown);
-      console.log('----FINISH----');
-      return;
-    });
-  }
-
-  function prepareWord(str) {
-    let accents = 'ÀÁÂÃÄÅàáâãäåßÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    let accentsOut = 'AAAAAAaaaaaaBOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
-    str = str.split('');
-    str.forEach((letter, index) => {
-      let i = accents.indexOf(letter);
-      if (i != -1) {
-        str[index] = accentsOut[i];
-      }
-    });
-
-    return str.join('');
-  }
-
-  function prepareListCSV() {
-    fs.open(path.join(__dirname, `/../data/${folder}/list.csv`), 'w', function (err, file) {
-      if (err) {
-        console.error(`Error opening file ${file}`, err);
-        throw err;
-      }
-
-      const logStream = fs.createWriteStream(path.join(__dirname, `/../data/${folder}/list.csv`), {
-        encoding: 'utf8',
-        flags: 'a',
+        lr.on('error', rej);
+        lr.on('line', function (line) {
+          lr.pause();
+          targetSet.add(line);
+          lr.resume();
+        });
+        lr.on('end', res);
       });
-      fs.readFile(
-        path.join(__dirname, `../data/${folder}/${folder}_streets.geojson`),
-        'utf8',
-        (err, data) => {
-          if (err) {
-            console.error('read file');
-            throw err;
-          }
+    }
 
-          const geojson = JSON.parse(data);
+    function classifyStreets(stream) {
+      return new Promise((res, rej) => {
+        const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/list.csv`), {
+          encoding: 'utf8',
+          skipEmptyLines: true,
+        });
 
-          for (const feature of geojson.features) {
-            if (feature.properties && feature.properties.name) {
-              const roadName = feature.properties.name;
-              const cleanName = currentLangs.reduce(
-                (name, lang) => cleanRoadName(name, lang),
-                roadName
-              );
+        lr.on('error', rej);
 
-              logStream.write(`${feature.properties.name};${cleanName}\n`);
-            } else {
-              numNoName++;
+        lr.on('line', function (line) {
+          lr.pause();
+
+          const splitLine = line.split(';');
+          const name_surname = splitLine[INDEX_CLEAN_NAME].split(' ');
+          const name = name_surname[0];
+          const surname = name_surname.length > 1 ? name_surname[1] : '';
+
+          let isWoman = false;
+          let isMan = false;
+
+          for (let word of name_surname) {
+            const w = prepareWord(word);
+            if (womenDic.has(w.toUpperCase())) {
+              isWoman = true;
+              break;
+            } else if (menDic.has(w.toUpperCase())) {
+              isMan = true;
+              break;
             }
           }
 
-          logStream.end('\n');
+          if (isWoman) {
+            stream.write(
+              `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};2;Female;-;-\n`
+            );
+            numFindWomen++;
+          } else if (isMan) {
+            stream.write(
+              `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};-2;Male;-;-\n`
+            );
+            numFindMen++;
+          } else {
+            stream.write(
+              `${splitLine[INDEX_FULL_NAME]};${splitLine[INDEX_CLEAN_NAME]};${name};${surname};0;Unknown;-;-\n`
+            );
+            numUnknown++;
+          }
 
-          initDictionaryObjects();
+          lr.resume();
+        });
+
+        lr.on('end', function () {
+          stream.end();
+          console.log('--------------');
+          console.log('Calles sin nombre: ', numNoName);
+          console.log('Nombres de mujer encontrados en el diccionario: ', numFindWomen);
+          console.log('Nombres de hombre encontrados en el diccionario: ', numFindMen);
+          console.log('Nombre desconocidos: ', numUnknown);
+          console.log('----FINISH----');
+          res();
+        });
+      });
+    }
+
+    function prepareListCSV() {
+      const streetsPath = path.join(__dirname, `../data/${folder}/${folder}_streets.geojson`);
+      const listPath = path.join(__dirname, `../data/${folder}/list.csv`);
+
+      fs.readFile(streetsPath, 'utf8', (err, data) => {
+        if (err) {
+          return reject(err);
         }
-      );
-    });
-  }
 
-  prepareListCSV();
+        const geojson = JSON.parse(data);
+        const logStream = fs.createWriteStream(listPath, { encoding: 'utf8', flags: 'w' });
+
+        for (const feature of geojson.features) {
+          if (feature.properties && feature.properties.name) {
+            const roadName = feature.properties.name;
+            const cleanName = currentLangs.reduce(
+              (name, lang) => cleanRoadName(name, lang),
+              roadName
+            );
+            logStream.write(`${feature.properties.name};${cleanName}\n`);
+          } else {
+            numNoName++;
+          }
+        }
+
+        logStream.end();
+        logStream.once('finish', () => {
+          runClassification().then(resolve, reject);
+        });
+      });
+    }
+
+    async function runClassification() {
+      await loadDictionary(path.join(__dirname, '../namesDB/list_mujeres.csv'), womenDic);
+      console.log('Diccionario de nombres de mujer init: OK');
+
+      await loadDictionary(path.join(__dirname, '../namesDB/list_hombres.csv'), menDic);
+      console.log('Diccionario de nombres de hombre init: OK');
+
+      const genderStream = fs.createWriteStream(
+        path.join(__dirname, `../data/${folder}/list_genderize.csv`),
+        { flags: 'w' }
+      );
+
+      await new Promise((res, rej) => {
+        genderStream.once('open', () => res());
+        genderStream.once('error', rej);
+      });
+
+      await classifyStreets(genderStream);
+    }
+
+    prepareListCSV();
+  });
+}
+
+function prepareWord(str) {
+  let accents = 'ÀÁÂÃÄÅàáâãäåßÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+  let accentsOut = 'AAAAAAaaaaaaBOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+  str = str.split('');
+  str.forEach((letter, index) => {
+    let i = accents.indexOf(letter);
+    if (i != -1) {
+      str[index] = accentsOut[i];
+    }
+  });
+
+  return str.join('');
 }
 
 module.exports = {

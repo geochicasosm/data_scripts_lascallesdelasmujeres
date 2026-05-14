@@ -10,9 +10,11 @@ const args = require('yargs')
 .alias('c', 'city')
 .alias('r', 'relation')
 .alias('lang', 'language')
+.alias('s', 'server')
 .describe('c', 'City in your data folder')
 .describe('r', 'OSM relation ID for that city')
 .describe('lang', 'main language of the streets names')
+.describe('s', 'Overpass server: 0=main, 1=z-level, 2=lz4 (or set OVERPASS_URL env var)')
 .demandOption(['c', 'r']).argv;
 
 function printArgs() {
@@ -28,6 +30,12 @@ async function startProcess() {
 	const city = args.city ? args.city : 'city';
 	const relationIdOSM = args.relation ? args.relation : 1;
 	const language = args.language ? args.language : 'es';
+	
+	// Set server selection from command line argument
+	if (args.server !== undefined) {
+		process.env.OVERPASS_SERVER_INDEX = args.server.toString();
+		console.log(`🌍 Using Overpass server index: ${args.server}`);
+	}
 	
 	const getStreetsResult = await processCity(city, relationIdOSM, language);
 	if(!getStreetsResult) return;

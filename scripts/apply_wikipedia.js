@@ -1,8 +1,8 @@
 'use strict';
 
-const LineByLineReader = require('line-by-line');
+const readline = require('readline');
 const fs = require('fs');
-const  path = require('path');
+const path = require('path');
 const Fuse = require('fuse.js');
 const wikipediaDic = require('./wikipedia_dic').wikipediaDic;
 
@@ -19,111 +19,93 @@ const args = require('yargs')
 
 const folder = args.city ? args.city : 'city';
 const keepUnknown = args.keepUnknown ? true : false;
-const streetMap = new Set();
 
 const COL_FULL_NAME = 0;
 const COL_CLEAN_NAME = 1;
-/* const COL_NAME = 2;
-const COL_SURNAME = 3;
-const COL_FIABILIDAD = 4; */
 const COL_GENDER = 5;
-/* const COL_WIKIPEDIA = 8; */
 
 const MALE = 'male';
 const FEMALE = 'female';
 const UNKNOWN = 'unknown';
 
-function startProcess(){
+const fuseOptions = {
+  id: 'sitelink',
+  ignoreDiacritics: true,
+  shouldSort: true,
+  minMatchCharLength: 3,
+  keys: ['itemLabel'],
+  location: 0,
+  threshold: 0.6,
+  distance: 100,
+};
+const myfuse = new Fuse(wikipediaDic, fuseOptions);
 
-    console.log('Starting wikipedia link search process...');
+async function startProcess() {
+  console.log('Starting wikipedia link search process...');
 
-    try {
-        const filtered_stream = fs.createWriteStream(path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`), {'flags': 'a'});
-        filtered_stream.once('open', function() {
-            filtered_stream.write('calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia');
-            filtered_stream.write('\n');
-            initReadFile(filtered_stream);           
-        });        
+  const inputFilePath = path.join(__dirname, `../data/${folder}/list_genderize.csv`);
 
-        } catch (err) {
-        console.error(err);
-        } 
+  if (!fs.existsSync(inputFilePath)) {
+    throw new Error(`Input file not found: ${inputFilePath}. Make sure the initial data processing step completed successfully.`);
+  }
+
+  const stats = fs.statSync(inputFilePath);
+  if (stats.size < 100) {
+    throw new Error(`Input file appears to be empty or contains only headers: ${inputFilePath}. This suggests the data extraction step failed.`);
+  }
+
+  console.log(`Input file validated: ${inputFilePath} (${stats.size} bytes)`);
+
+  const outputPath = path.join(__dirname, `../data/${folder}/list_genderize_wikipedia.csv`);
+  const outputStream = fs.createWriteStream(outputPath, { flags: 'w' });
+
+  await new Promise((resolve, reject) => {
+    outputStream.once('open', resolve);
+    outputStream.once('error', reject);
+  });
+
+  outputStream.write('calle;calleClean;name;surname;fiabilidad;gender;category;typeofroad;wikipedia\n');
+
+  const rl = readline.createInterface({
+    input: fs.createReadStream(inputFilePath, { encoding: 'utf8' }),
+    crlfDelay: Infinity,
+  });
+
+  const streetMap = new Set();
+
+  for await (const line of rl) {
+    if (!line.trim()) continue;
+
+    const splitLine = line.split(';');
+
+    if (streetMap.has(splitLine[COL_FULL_NAME])) continue;
+
+    const gender = splitLine[COL_GENDER].toLowerCase();
+    streetMap.add(splitLine[COL_FULL_NAME]);
+
+    if (gender === MALE) {
+      outputStream.write(line + '\n');
+    } else if (gender === FEMALE) {
+      const result = myfuse.search(splitLine[COL_CLEAN_NAME]);
+      const url = result.length > 0 && result[0]?.item?.sitelink
+        ? result[0].item.sitelink
+        : '';
+      outputStream.write(`${line};${url}\n`);
+    } else if (keepUnknown && gender === UNKNOWN) {
+      outputStream.write(line + '\n');
+    }
+  }
+
+  await new Promise((resolve, reject) => {
+    outputStream.end();
+    outputStream.once('finish', resolve);
+    outputStream.once('error', reject);
+  });
+
+  console.log('----FINISH----');
 }
 
-function initReadFile(stream){
-
-    console.log('init read file list_genderize.csv-');
-
-    const lr = new LineByLineReader(path.join(__dirname, `../data/${folder}/list_genderize.csv`), { encoding: 'utf8', skipEmptyLines: true });
-
-    lr.on('error', function (err) {
-        console.log(err);
-        throw err;
-    });
-    
-    lr.on('line', function (line) {
-
-        lr.pause();
-    
-        var splitLine = line.split(';');
-    
-        //Male case
-        if(!streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === MALE){
-    
-            stream.write(line);
-            stream.write('\n');
-            streetMap.add(splitLine[COL_FULL_NAME]);
-            lr.resume();
-    
-        }else if(!streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === FEMALE){ //Female case
-
-            streetMap.add(splitLine[COL_FULL_NAME]);
-
-            const result = myfuse.search(`${splitLine[COL_CLEAN_NAME]}`);
-            const url = result.length > 0  && result[0]?.item?.sitelink 
-                ? result[0].item.sitelink 
-                : '';
-            stream.write(`${line};${url}`);
-            stream.write('\n');
-            lr.resume(); 
-
-    
-        }if(keepUnknown && !streetMap.has(splitLine[COL_FULL_NAME]) && splitLine[COL_GENDER].toLowerCase() === UNKNOWN){ //Female case
-            
-            stream.write(line);
-            stream.write('\n');
-            streetMap.add(splitLine[COL_FULL_NAME]);
-            lr.resume();
-
-        } else{
-            lr.resume();
-        }
-            
-    });
-    
-    lr.on('end', function () {
-        stream.end();
-        console.log('----FINISH----');
-    });
-
-}
-
-// https://www.fusejs.io/api/options.html#includematches
-var options = {
-    // Basic options
-    id: 'sitelink',
-    ignoreDiacritics: true,
-    shouldSort: true,
-    minMatchCharLength: 3,
-    keys: [
-      'itemLabel'
-    ],
-    // Fuzzy matching options 
-    location: 0,
-    threshold: 0.6,
-    distance: 100,
-  };
-const myfuse = new Fuse(wikipediaDic, options);
-
-
-startProcess();
+startProcess().catch((err) => {
+  console.error('ERROR:', err.message);
+  process.exit(1);
+});
