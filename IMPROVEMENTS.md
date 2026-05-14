@@ -32,24 +32,11 @@ Apply the same pattern to `process`.
 
 ---
 
-## 2. No timeout on Overpass API requests
+## 2. ~~No timeout on Overpass API requests~~ ✅ DONE (2026-05-14)
 
-**Problem:** If an Overpass server stops responding mid-request, the process
-hangs forever. The retry logic in `retryWithBackoff` only handles *failures*,
-not *hangs*.
-
-**Fix:** `callOverpassAPI` now uses Node's built-in `https.request` directly
-(see improvement #8, which is done). Adding a timeout is now trivial:
-
-```javascript
-req.setTimeout(60000, () => {
-  req.destroy(new Error('Request timed out after 60s'));
-});
-```
-
-Add this line inside `callOverpassAPI` after `transport.request(...)`.
-
-**Effort:** ~5 minutes (was medium before we owned the HTTP layer).
+`callOverpassAPI` now sets a 60s timeout via `req.setTimeout`. On timeout,
+`req.destroy(new Error(...))` fires, which triggers `req.on('error')` → reject
+→ `retryWithBackoff` retries on the next server.
 
 ---
 
@@ -142,62 +129,12 @@ G[🏷️ Clasificar géneros\ncon diccionario local]
 
 ---
 
-## 6. Modernize async patterns in `apply_gender.js`
+## 6. ~~Modernize async patterns in `apply_gender.js`~~ ✅ DONE (prior commit 1737865)
 
-**Problem:** `apply_gender.js` uses deeply nested callbacks: `fs.open` →
-`fs.createWriteStream` → `fs.readFile` → `LineByLineReader` events → nested
-`LineByLineReader` events. The `applyGender` function does not return a Promise
-that resolves when work is complete (only in the cache-hit path). This means
-`index.js` calling `await applyGender(...)` resolves immediately while actual
-processing continues in detached callbacks.
-
-This is the **root cause** of a real bug: if the process exits quickly after
-`processCity` returns, gender classification may be incomplete.
-
-**Current call chain:**
-```
-applyGender()
-  → checkGenderizeCache() → returns Promise.resolve() [cache hit only]
-  → prepareListCSV() → returns undefined [no Promise!]
-    → fs.open callback
-      → fs.readFile callback
-        → initDictionaryObjects()
-          → initWomenDic() via LineByLineReader
-            → on('end') → initMenDic() via LineByLineReader
-              → on('end') → startProcess()
-                → new Promise (but it's never returned!)
-```
-
-**Fix approach:** Wrap the entire flow in a Promise that resolves in the final
-`lr.on('end')` handler. This is a targeted fix that doesn't require rewriting
-the whole file:
-
-```javascript
-function applyGender(folder, currentLangs = ['es']) {
-  // ... existing setup code ...
-
-  if (checkGenderizeCache()) {
-    console.log('✅ Gender classification already completed');
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve, reject) => {
-    // Pass resolve/reject through the callback chain
-    // so the final lr.on('end') in initReadFile calls resolve()
-    prepareListCSV(resolve, reject);
-  });
-}
-```
-
-Then thread `resolve`/`reject` through `prepareListCSV` → `initDictionaryObjects`
-→ `initWomenDic` → `initMenDic` → `startProcess` → `initReadFile`, and call
-`resolve()` in the final `lr.on('end')` handler and `reject(err)` in any
-`lr.on('error')` handler.
-
-A **better long-term fix** is to convert the entire file to async/await using
-`readline` (built-in) or `fs.promises`, but that's a larger rewrite.
-
-**Effort:** Targeted Promise fix: ~30 minutes. Full async rewrite: ~2 hours.
+`applyGender` already returns a proper Promise wrapping the full callback chain.
+`prepareListCSV` → `runClassification().then(resolve, reject)` → `classifyStreets`
+resolves in `lr.on('end')`. Both error paths call `reject`. The bug described
+here was fixed before this document was written.
 
 ---
 
@@ -307,12 +244,10 @@ Inter-request delays also reduced: 15s→10s (large grid), 10s→5s (small grid)
 
 Based on impact and effort:
 
-1. **#6 (applyGender Promise)** — Real bug causing potential data loss. Medium effort.
-2. **#2 (Timeouts)** — Now ~5 min since we own the HTTP layer. Prevents hangs.
-3. **#5 (README fix)** — Trivial fix, improves accuracy.
-4. **#1 (Justfile language)** — Small fix, improves usability.
-5. **#4 (Grid cleanup)** — Small fix, saves disk space.
-6. **#3 (bbox pre-filter)** — Medium effort, big perf win for large cities.
-7. **#10 (Wikipedia handler)** — Small effort, improves correctness.
-8. **#7 (Modernize apply_wikipedia)** — Nice-to-have cleanup.
-9. **#9 (rbush)** — Only if large cities are a bottleneck.
+1. **#5 (README fix)** — Trivial fix, improves accuracy.
+2. **#1 (Justfile language)** — Small fix, improves usability.
+3. **#4 (Grid cleanup)** — Small fix, saves disk space.
+4. **#10 (Wikipedia handler)** — Small effort, improves correctness.
+5. **#3 (bbox pre-filter)** — Medium effort, big perf win for large cities.
+6. **#7 (Modernize apply_wikipedia)** — Nice-to-have cleanup.
+7. **#9 (rbush)** — Only if large cities are a bottleneck.

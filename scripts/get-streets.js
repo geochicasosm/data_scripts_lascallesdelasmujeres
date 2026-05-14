@@ -199,6 +199,7 @@ async function callOverpassAPI(query, serverConfig = null) {
     };
 
     const req = transport.request(reqOptions, (res) => {
+      req.setTimeout(0); // clear the connect timeout once response starts
       if (res.statusCode !== 200) {
         res.resume();
         return reject(new Error(`Request failed: HTTP ${res.statusCode}`));
@@ -228,6 +229,9 @@ async function callOverpassAPI(query, serverConfig = null) {
       });
     });
 
+    req.setTimeout(60000, () => {
+      req.destroy(new Error('Request timed out after 60s'));
+    });
     req.on('error', reject);
     req.write(body);
     req.end();
