@@ -8,6 +8,11 @@ const OVERPASS_SERVERS = [
     description: 'Official Overpass API server (default)'
   },
   {
+    name: 'Kumi Systems Overpass',
+    url: 'https://overpass.kumi.systems/api/interpreter',
+    description: 'Community Overpass mirror (kumi.systems)'
+  },
+  {
     name: 'Z-Level Overpass',
     url: 'https://z.overpass-api.de/api/interpreter',
     description: 'Z-Level Overpass server (lighter load)'

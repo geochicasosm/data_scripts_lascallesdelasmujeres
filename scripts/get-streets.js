@@ -1,8 +1,10 @@
 'use strict';
 
 const path = require('path');
-
-const overpass = require('query-overpass');
+const https = require('https');
+const http = require('http');
+const osmtogeojson = require('osmtogeojson');
+const xmldom = require('xmldom');
 const booleanContains = require('@turf/boolean-contains').default;
 const flatten = require('@turf/flatten').default;
 const bbox = require('@turf/bbox').default;
@@ -142,24 +144,25 @@ async function retryWithBackoff(queryFn, maxRetries = 3, baseDelay = 1000, useFa
       // Decide whether to switch servers or just retry
       const isServerError = error.message.includes('504') || error.message.includes('502') || error.message.includes('503');
       const isRateLimit = error.message.includes('429') || error.message.includes('Too Many Requests');
-      
+      const isNotAcceptable = error.message.includes('406');
+
       let delay;
-      
+
       if (isRateLimit) {
         // For rate limiting: try different server first, then longer delays
         if (useFailover && attempt === 1) {
           currentServer = getNextOverpassServer();
-          delay = 5000; // Short delay when switching servers
+          delay = 5000;
           console.log(`⚠️  Rate limited. Trying different server after ${delay/1000}s...`);
         } else {
           delay = 30000 * Math.pow(2, attempt - 1);
           console.log(`⚠️  Rate limited. Waiting ${delay/1000}s before retry...`);
         }
-      } else if (isServerError && useFailover && attempt <= 2) {
-        // Switch server for server errors (but not on last attempt)
+      } else if ((isServerError || isNotAcceptable) && useFailover && attempt <= 2) {
+        // Switch server for server errors and 406 (server rejecting our client/IP)
         currentServer = getNextOverpassServer();
-        delay = baseDelay * attempt; // Moderate delay when switching servers
-        console.log(`🔄 Server error. Trying different server after ${delay/1000}s...`);
+        delay = baseDelay * attempt;
+        console.log(`🔄 Server error (${isNotAcceptable ? '406' : 'gateway'}). Trying different server after ${delay/1000}s...`);
       } else {
         // For other errors: exponential backoff
         delay = baseDelay * Math.pow(2, attempt - 1);
@@ -174,33 +177,60 @@ async function retryWithBackoff(queryFn, maxRetries = 3, baseDelay = 1000, useFa
 // Enhanced function to call Overpass API with a single query and failover support
 async function callOverpassAPI(query, serverConfig = null) {
   const server = serverConfig || getOverpassConfig();
-  
-  return new Promise((resolve, reject) => {
-    console.log(`Requesting data from ${server.name}...`);
-    console.log('Query:', query.split('\n')[0] + '...');
 
-    const options = {
-      overpassUrl: server.url,
-      flatProperties: false
+  console.log(`Requesting data from ${server.name}...`);
+  console.log('Query:', query.split('\n')[0] + '...');
+
+  return new Promise((resolve, reject) => {
+    const body = new URLSearchParams({ data: query }).toString();
+    const url = new URL(server.url);
+    const transport = url.protocol === 'https:' ? https : http;
+
+    const reqOptions = {
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(body),
+        'User-Agent': 'LasCallesDeLasMujeres/1.0 (https://github.com/geochicasosm/lascallesdelasmujeres)'
+      }
     };
 
-    overpass(query, (error, data) => {
-      if (error) {
-        console.log(`${server.name} error:`, error);
-        return reject(error);
+    const req = transport.request(reqOptions, (res) => {
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`Request failed: HTTP ${res.statusCode}`));
       }
-      
-      if (!data) {
-        return reject(new Error(`Received empty response from ${server.name}`));
-      }
-      
-      if (!data.features || !Array.isArray(data.features)) {
-        return reject(new Error(`Invalid response format from ${server.name} - missing or invalid features array`));
-      }
-      
-      console.log(`✅ ${server.name}: ${data.features.length} features received`);
-      resolve(data);
-    }, options);
+
+      const contentType = res.headers['content-type'] || '';
+      let rawData = '';
+      res.on('data', chunk => { rawData += chunk; });
+      res.on('end', () => {
+        try {
+          let osmData;
+          if (contentType.includes('json')) {
+            osmData = JSON.parse(rawData);
+          } else {
+            const parser = new xmldom.DOMParser();
+            osmData = parser.parseFromString(rawData);
+          }
+          const geojson = osmtogeojson(osmData, { flatProperties: false });
+          if (!geojson.features || !Array.isArray(geojson.features)) {
+            return reject(new Error(`Invalid response format from ${server.name} - missing features array`));
+          }
+          console.log(`✅ ${server.name}: ${geojson.features.length} features received`);
+          resolve(geojson);
+        } catch (err) {
+          reject(new Error(`Failed to parse response from ${server.name}: ${err.message}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
   });
 }
 
@@ -431,7 +461,7 @@ async function getStreetsByBBOX(bboxCity, city = 'city', language = 'es', cityBo
     index++;
     
     if (!wasAlreadyCached && index < grid.length) {
-      const delay = rateLimitEncountered ? 30000 : (grid.length > 4 ? 15000 : 10000);
+      const delay = rateLimitEncountered ? 30000 : (grid.length > 4 ? 10000 : 5000);
       console.log(`⏱️  Waiting ${delay/1000}s before next request to overpass...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
